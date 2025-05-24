@@ -10,8 +10,6 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedProduct, setEditedProduct] = useState(null);
   const [datasetUploading, setDatasetUploading] = useState(false);
   const [datasetError, setDatasetError] = useState('');
   const [datasetSuccess, setDatasetSuccess] = useState('');
@@ -28,7 +26,6 @@ const ProductDetail = () => {
         if (!response.ok) throw new Error('Product not found');
         const data = await response.json();
         setProduct(data);
-        setEditedProduct(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -38,26 +35,6 @@ const ProductDetail = () => {
 
     fetchProduct();
   }, [id]);
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(editedProduct)
-      });
-      if (!response.ok) throw new Error('Failed to update product');
-      const data = await response.json();
-      setProduct(data.product);
-      setIsEditing(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -74,57 +51,6 @@ const ProductDetail = () => {
         setError(err.message);
       }
     }
-  };
-
-  const handlePromotionChange = (idx, field, value) => {
-    const updated = [...editedProduct.promotion];
-    updated[idx][field] = value;
-    setEditedProduct({ ...editedProduct, promotion: updated });
-  };
-
-  const addPromotion = () => {
-    setEditedProduct({
-      ...editedProduct,
-      promotion: [
-        ...editedProduct.promotion,
-        { date: '', duration: '', area: '', platform: '' },
-      ],
-    });
-  };
-
-  const removePromotion = (idx) => {
-    const updated = [...editedProduct.promotion];
-    updated.splice(idx, 1);
-    setEditedProduct({ ...editedProduct, promotion: updated });
-  };
-
-  const handleCompetitorChange = (idx, field, value) => {
-    const updated = [...editedProduct.competitors];
-    updated[idx][field] = value;
-    setEditedProduct({ ...editedProduct, competitors: updated });
-  };
-
-  const addCompetitor = () => {
-    setEditedProduct({
-      ...editedProduct,
-      competitors: [
-        ...editedProduct.competitors,
-        { price: '', discount: '', sales: '', marketShare: '' },
-      ],
-    });
-  };
-
-  const removeCompetitor = (idx) => {
-    const updated = [...editedProduct.competitors];
-    updated.splice(idx, 1);
-    setEditedProduct({ ...editedProduct, competitors: updated });
-  };
-
-  const handleRatingsChange = (field, value) => {
-    setEditedProduct({
-      ...editedProduct,
-      ratings: { ...editedProduct.ratings, [field]: value },
-    });
   };
 
   const handleDatasetUpload = async (e) => {
@@ -209,207 +135,96 @@ const ProductDetail = () => {
 
           {/* Product Details */}
           <div className="md:w-1/2 p-8">
-            {isEditing ? (
-              <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="flex justify-between items-start mb-6">
+              <h1 className="text-3xl font-bold text-text">{product.name}</h1>
+              <div className="space-x-2">
+                <button
+                  onClick={() => navigate(`/products/${id}/edit`)}
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-text">Category</h2>
+                <p className="text-text-muted">{product.category}</p>
+              </div>
+              {product.subCategory && (
                 <div>
-                  <label className="block text-sm font-medium text-text">Name</label>
-                  <input
-                    type="text"
-                    value={editedProduct.name}
-                    onChange={(e) => setEditedProduct({ ...editedProduct, name: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
-                    required
-                  />
+                  <h2 className="text-lg font-semibold text-text">Sub Category</h2>
+                  <p className="text-text-muted">{product.subCategory}</p>
                 </div>
+              )}
+              <div>
+                <h2 className="text-lg font-semibold text-text">Price</h2>
+                <p className="text-text-muted">${product.price}</p>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-text">Stock</h2>
+                <p className="text-text-muted">{product.stock} units</p>
+              </div>
+              {product.brand && (
                 <div>
-                  <label className="block text-sm font-medium text-text">Category</label>
-                  <input
-                    type="text"
-                    value={editedProduct.category}
-                    onChange={(e) => setEditedProduct({ ...editedProduct, category: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
-                    required
-                  />
+                  <h2 className="text-lg font-semibold text-text">Brand</h2>
+                  <p className="text-text-muted">{product.brand}</p>
                 </div>
+              )}
+              {product.description && (
                 <div>
-                  <label className="block text-sm font-medium text-text">Price</label>
-                  <input
-                    type="number"
-                    value={editedProduct.price}
-                    onChange={(e) => setEditedProduct({ ...editedProduct, price: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
-                    required
-                    min="0"
-                    step="0.01"
-                  />
+                  <h2 className="text-lg font-semibold text-text">Description</h2>
+                  <p className="text-text-muted">{product.description}</p>
                 </div>
+              )}
+              {product.ratings && (
                 <div>
-                  <label className="block text-sm font-medium text-text">Stock</label>
-                  <input
-                    type="number"
-                    value={editedProduct.stock}
-                    onChange={(e) => setEditedProduct({ ...editedProduct, stock: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
-                    required
-                    min="0"
-                  />
+                  <h2 className="text-lg font-semibold text-text">Ratings</h2>
+                  <p className="text-text-muted">
+                    Average: {product.ratings.average} ({product.ratings.count} reviews)
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-text">Sub Category</label>
-                  <input type="text" value={editedProduct.subCategory || ''} onChange={e => setEditedProduct({ ...editedProduct, subCategory: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text">Brand</label>
-                  <input type="text" value={editedProduct.brand || ''} onChange={e => setEditedProduct({ ...editedProduct, brand: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text">Description</label>
-                  <textarea value={editedProduct.description || ''} onChange={e => setEditedProduct({ ...editedProduct, description: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text">Image URL</label>
-                  <input type="text" value={editedProduct.imageUrl || ''} onChange={e => setEditedProduct({ ...editedProduct, imageUrl: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
-                </div>
-                <div className="flex space-x-4">
-                  <button
-                    type="submit"
-                    className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-full font-bold shadow-md hover:from-primary-dark hover:to-accent"
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="bg-background text-text px-4 py-2 rounded-full font-bold border border-background-card"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              )}
+            </div>
+
+            {/* Dataset Upload Section */}
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold text-text mb-4">Upload Dataset</h2>
+              <form onSubmit={handleDatasetUpload} className="space-y-4">
+                <input
+                  type="file"
+                  ref={datasetInputRef}
+                  className="block w-full text-sm text-text-muted
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-primary file:text-white
+                    hover:file:bg-primary-dark"
+                />
+                <button
+                  type="submit"
+                  disabled={datasetUploading}
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark disabled:opacity-50"
+                >
+                  {datasetUploading ? 'Uploading...' : 'Upload Dataset'}
+                </button>
+                {datasetError && (
+                  <p className="text-red-600">{datasetError}</p>
+                )}
+                {datasetSuccess && (
+                  <p className="text-green-600">{datasetSuccess}</p>
+                )}
               </form>
-            ) : (
-              <>
-                <h1 className="text-3xl font-bold text-text mb-4">{product.name}</h1>
-                <div className="space-y-4">
-                  <p className="text-text-muted">
-                    <span className="font-semibold">Category:</span> {product.category}
-                  </p>
-                  {product.subCategory && (
-                    <p className="text-text-muted">
-                      <span className="font-semibold">Sub Category:</span> {product.subCategory}
-                    </p>
-                  )}
-                  <p className="text-2xl font-bold text-primary">${product.price}</p>
-                  <p className="text-text-muted">
-                    <span className="font-semibold">Stock:</span> {product.stock}
-                  </p>
-                  {product.brand && (
-                    <p className="text-text-muted">
-                      <span className="font-semibold">Brand:</span> {product.brand}
-                    </p>
-                  )}
-                  {product.description && (
-                    <p className="text-text-muted">
-                      <span className="font-semibold">Description:</span> {product.description}
-                    </p>
-                  )}
-                  {product.ratings && (
-                    <div className="flex items-center space-x-2">
-                      <span className="font-semibold">Rating:</span>
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`h-5 w-5 ${
-                              i < Math.floor(product.ratings.average)
-                                ? 'text-yellow-400'
-                                : 'text-background-card'
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                        <span className="ml-2 text-text-muted">
-                          ({product.ratings.count} reviews)
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {product.promotion && product.promotion.length > 0 && (
-                    <div className="bg-green-100 p-4 rounded-lg">
-                      <h3 className="font-semibold text-green-800">Active Promotion</h3>
-                      {product.promotion.map((promo, index) => (
-                        <div key={index} className="mt-2">
-                          <p className="text-green-700">
-                            Platform: {promo.platform}
-                          </p>
-                          <p className="text-green-700">
-                            Area: {promo.area}
-                          </p>
-                          <p className="text-green-700">
-                            Duration: {promo.duration} days
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {product.competitors && product.competitors.length > 0 && (
-                    <div className="bg-blue-100 p-4 rounded-lg">
-                      <h3 className="font-semibold text-blue-800">Competitor Information</h3>
-                      {product.competitors.map((comp, index) => (
-                        <div key={index} className="mt-2">
-                          <p className="text-blue-700">
-                            Price: ${comp.price}
-                          </p>
-                          <p className="text-blue-700">
-                            Discount: {comp.discount}%
-                          </p>
-                          <p className="text-blue-700">
-                            Sales: {comp.sales}
-                          </p>
-                          <p className="text-blue-700">
-                            Market Share: {comp.marketShare}%
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="mt-8 flex space-x-4">
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-full font-bold shadow-md hover:from-primary-dark hover:to-accent"
-                  >
-                    Edit Product
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                  >
-                    Delete Product
-                  </button>
-                </div>
-              </>
-            )}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="mt-8 bg-background-card rounded-lg p-6 shadow-inner">
-        <h3 className="text-xl font-bold mb-4 text-text">Upload Dataset</h3>
-        <form onSubmit={handleDatasetUpload} className="flex flex-col md:flex-row items-center gap-4">
-          <input type="file" ref={datasetInputRef} accept=".csv,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" className="border border-background-card rounded p-2 bg-background text-text" />
-          <button type="submit" disabled={datasetUploading} className="bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-full font-bold shadow-md hover:from-primary-dark hover:to-accent transition-all">
-            {datasetUploading ? 'Uploading...' : 'Upload Dataset'}
-          </button>
-        </form>
-        {datasetError && <div className="text-red-500 mt-2">{datasetError}</div>}
-        {datasetSuccess && <div className="text-green-600 mt-2">{datasetSuccess}</div>}
-        {product.datasetUrl && (
-          <div className="mt-2">
-            <a href={product.datasetUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">View Uploaded Dataset</a>
-          </div>
-        )}
       </div>
     </div>
   );

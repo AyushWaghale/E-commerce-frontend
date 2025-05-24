@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
+import ProductEdit from './pages/ProductEdit';
 import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
 import Landing from './pages/Landing';
@@ -37,6 +38,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <ProductDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/products/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <ProductEdit />
                   </ProtectedRoute>
                 }
               />
