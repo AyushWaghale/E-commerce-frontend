@@ -25,24 +25,24 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h1 className="text-3xl md:text-4xl font-extrabold mb-8 text-center text-black">Sales Forecasting Platform</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <h1 className="text-3xl md:text-4xl font-extrabold mb-8 text-center text-text">Sales Forecasting Platform</h1>
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl flex overflow-hidden">
         {/* Left: Welcome Back */}
-        <div className="hidden md:flex w-1/2 flex-col items-center justify-center bg-gradient-to-br from-orange-500 to-pink-500 text-white p-8">
+        <div className="hidden md:flex w-1/2 flex-col items-center justify-center bg-gradient-to-br from-primary to-accent text-white p-8">
           <h2 className="text-3xl font-extrabold mb-2">Welcome Back!</h2>
           <p className="mb-6 text-center">Login to access sales insights</p>
           <Link
             to="/login"
-            className="border-2 border-white rounded-full px-8 py-3 font-bold text-lg hover:bg-white hover:text-orange-500 transition-all"
+            className="border-2 border-white rounded-full px-8 py-3 font-bold text-lg hover:bg-white hover:text-primary transition-all"
           >
             SIGN IN
           </Link>
         </div>
         {/* Right: Register */}
         <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-          <h2 className="text-3xl font-extrabold text-black mb-2 text-center">Create Account</h2>
-          <p className="text-gray-600 text-center mb-6">Register to access forecasting insights</p>
+          <h2 className="text-3xl font-extrabold text-text mb-2 text-center">Create Account</h2>
+          <p className="text-text-muted text-center mb-6">Register to access forecasting insights</p>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* <input
               type="text"
@@ -55,7 +55,7 @@ const Register = () => {
             <input
               type="email"
               placeholder="Business Email"
-              className="w-full px-4 py-3 rounded bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
+              className="w-full px-4 py-3 rounded bg-background border border-background-card focus:outline-none focus:ring-2 focus:ring-primary text-lg"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -63,7 +63,7 @@ const Register = () => {
             <input
               type="password"
               placeholder="Password"
-              className="w-full px-4 py-3 rounded bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
+              className="w-full px-4 py-3 rounded bg-background border border-background-card focus:outline-none focus:ring-2 focus:ring-primary text-lg"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -72,7 +72,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold text-lg shadow-md hover:from-orange-600 hover:to-pink-600 transition-all"
+              className="w-full py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white font-bold text-lg shadow-md hover:from-primary-dark hover:to-accent transition-all"
             >
               {loading ? 'Signing up...' : 'SIGN UP'}
             </button>

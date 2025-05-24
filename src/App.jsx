@@ -6,6 +6,7 @@ import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
+import Landing from './pages/Landing';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -39,7 +40,7 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/" element={<Navigate to="/products" />} />
+              <Route path="/" element={<Landing />} />
             </Routes>
           </main>
         </div>
