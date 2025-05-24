@@ -38,16 +38,28 @@ export const productAPI = {
 
   addProduct: async (productData) => {
     const formData = new FormData();
+  
     Object.keys(productData).forEach(key => {
-      formData.append(key, productData[key]);
+      if (key === 'promotion' || key === 'competitors') {
+        formData.append(key, JSON.stringify(productData[key] || []));
+      } else if (key === 'ratings') {
+        formData.append('ratings', JSON.stringify(productData.ratings || { average: 0, count: 0 }));
+      } else if (key === 'image' && productData[key]) {
+        formData.append('file', productData[key]); // ✅ IMPORTANT: key must match multer field name (e.g. 'file')
+      } else if (productData[key] !== undefined && productData[key] !== null) {
+        formData.append(key, productData[key]);
+      }
     });
+  
     const response = await api.post('/api/products', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'multipart/form-data', // ✅ This triggers correct boundary setup
       },
     });
+  
     return response.data;
   },
+  
 
   updateProduct: async (id, productData) => {
     const response = await api.put(`/api/products/${id}`, productData);

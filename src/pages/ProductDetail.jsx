@@ -162,8 +162,8 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex justify-center items-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -189,8 +189,8 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="container mx-auto px-4 py-8 bg-background text-text">
+      <div className="bg-background-card rounded-lg shadow-lg overflow-hidden">
         <div className="md:flex">
           {/* Product Image */}
           <div className="md:w-1/2">
@@ -201,8 +201,8 @@ const ProductDetail = () => {
                 className="w-full h-96 object-cover"
               />
             ) : (
-              <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">No image available</span>
+              <div className="w-full h-96 bg-background flex items-center justify-center">
+                <span className="text-text-muted">No image available</span>
               </div>
             )}
           </div>
@@ -212,75 +212,75 @@ const ProductDetail = () => {
             {isEditing ? (
               <form onSubmit={handleUpdate} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-sm font-medium text-text">Name</label>
                   <input
                     type="text"
                     value={editedProduct.name}
                     onChange={(e) => setEditedProduct({ ...editedProduct, name: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
+                  <label className="block text-sm font-medium text-text">Category</label>
                   <input
                     type="text"
                     value={editedProduct.category}
                     onChange={(e) => setEditedProduct({ ...editedProduct, category: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Price</label>
+                  <label className="block text-sm font-medium text-text">Price</label>
                   <input
                     type="number"
                     value={editedProduct.price}
                     onChange={(e) => setEditedProduct({ ...editedProduct, price: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
                     required
                     min="0"
                     step="0.01"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Stock</label>
+                  <label className="block text-sm font-medium text-text">Stock</label>
                   <input
                     type="number"
                     value={editedProduct.stock}
                     onChange={(e) => setEditedProduct({ ...editedProduct, stock: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text"
                     required
                     min="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Sub Category</label>
-                  <input type="text" value={editedProduct.subCategory || ''} onChange={e => setEditedProduct({ ...editedProduct, subCategory: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" />
+                  <label className="block text-sm font-medium text-text">Sub Category</label>
+                  <input type="text" value={editedProduct.subCategory || ''} onChange={e => setEditedProduct({ ...editedProduct, subCategory: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Brand</label>
-                  <input type="text" value={editedProduct.brand || ''} onChange={e => setEditedProduct({ ...editedProduct, brand: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" />
+                  <label className="block text-sm font-medium text-text">Brand</label>
+                  <input type="text" value={editedProduct.brand || ''} onChange={e => setEditedProduct({ ...editedProduct, brand: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea value={editedProduct.description || ''} onChange={e => setEditedProduct({ ...editedProduct, description: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" />
+                  <label className="block text-sm font-medium text-text">Description</label>
+                  <textarea value={editedProduct.description || ''} onChange={e => setEditedProduct({ ...editedProduct, description: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                  <input type="text" value={editedProduct.imageUrl || ''} onChange={e => setEditedProduct({ ...editedProduct, imageUrl: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" />
+                  <label className="block text-sm font-medium text-text">Image URL</label>
+                  <input type="text" value={editedProduct.imageUrl || ''} onChange={e => setEditedProduct({ ...editedProduct, imageUrl: e.target.value })} className="mt-1 block w-full rounded-md border-background-card shadow-sm focus:border-primary focus:ring-primary bg-background text-text" />
                 </div>
                 <div className="flex space-x-4">
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-2 rounded-full font-bold shadow-md hover:from-orange-600 hover:to-pink-600"
+                    className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-full font-bold shadow-md hover:from-primary-dark hover:to-accent"
                   >
                     Save Changes
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="bg-gray-500 text-white px-4 py-2 rounded-full font-bold"
+                    className="bg-background text-text px-4 py-2 rounded-full font-bold border border-background-card"
                   >
                     Cancel
                   </button>
@@ -288,27 +288,27 @@ const ProductDetail = () => {
               </form>
             ) : (
               <>
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                <h1 className="text-3xl font-bold text-text mb-4">{product.name}</h1>
                 <div className="space-y-4">
-                  <p className="text-gray-600">
+                  <p className="text-text-muted">
                     <span className="font-semibold">Category:</span> {product.category}
                   </p>
                   {product.subCategory && (
-                    <p className="text-gray-600">
+                    <p className="text-text-muted">
                       <span className="font-semibold">Sub Category:</span> {product.subCategory}
                     </p>
                   )}
-                  <p className="text-2xl font-bold text-blue-600">${product.price}</p>
-                  <p className="text-gray-600">
+                  <p className="text-2xl font-bold text-primary">${product.price}</p>
+                  <p className="text-text-muted">
                     <span className="font-semibold">Stock:</span> {product.stock}
                   </p>
                   {product.brand && (
-                    <p className="text-gray-600">
+                    <p className="text-text-muted">
                       <span className="font-semibold">Brand:</span> {product.brand}
                     </p>
                   )}
                   {product.description && (
-                    <p className="text-gray-600">
+                    <p className="text-text-muted">
                       <span className="font-semibold">Description:</span> {product.description}
                     </p>
                   )}
@@ -322,7 +322,7 @@ const ProductDetail = () => {
                             className={`h-5 w-5 ${
                               i < Math.floor(product.ratings.average)
                                 ? 'text-yellow-400'
-                                : 'text-gray-300'
+                                : 'text-background-card'
                             }`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
@@ -330,7 +330,7 @@ const ProductDetail = () => {
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         ))}
-                        <span className="ml-2 text-gray-600">
+                        <span className="ml-2 text-text-muted">
                           ({product.ratings.count} reviews)
                         </span>
                       </div>
@@ -379,7 +379,7 @@ const ProductDetail = () => {
                 <div className="mt-8 flex space-x-4">
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-2 rounded-full font-bold shadow-md hover:from-orange-600 hover:to-pink-600"
+                    className="bg-gradient-to-r from-primary to-accent text-white px-4 py-2 rounded-full font-bold shadow-md hover:from-primary-dark hover:to-accent"
                   >
                     Edit Product
                   </button>
@@ -395,11 +395,11 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
-      <div className="mt-8 bg-gray-50 rounded-lg p-6 shadow-inner">
-        <h3 className="text-xl font-bold mb-4 text-black">Upload Dataset</h3>
+      <div className="mt-8 bg-background-card rounded-lg p-6 shadow-inner">
+        <h3 className="text-xl font-bold mb-4 text-text">Upload Dataset</h3>
         <form onSubmit={handleDatasetUpload} className="flex flex-col md:flex-row items-center gap-4">
-          <input type="file" ref={datasetInputRef} accept=".csv,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" className="border border-gray-300 rounded p-2" />
-          <button type="submit" disabled={datasetUploading} className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-2 rounded-full font-bold shadow-md hover:from-orange-600 hover:to-pink-600 transition-all">
+          <input type="file" ref={datasetInputRef} accept=".csv,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" className="border border-background-card rounded p-2 bg-background text-text" />
+          <button type="submit" disabled={datasetUploading} className="bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-full font-bold shadow-md hover:from-primary-dark hover:to-accent transition-all">
             {datasetUploading ? 'Uploading...' : 'Upload Dataset'}
           </button>
         </form>
@@ -407,7 +407,7 @@ const ProductDetail = () => {
         {datasetSuccess && <div className="text-green-600 mt-2">{datasetSuccess}</div>}
         {product.datasetUrl && (
           <div className="mt-2">
-            <a href={product.datasetUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View Uploaded Dataset</a>
+            <a href={product.datasetUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">View Uploaded Dataset</a>
           </div>
         )}
       </div>

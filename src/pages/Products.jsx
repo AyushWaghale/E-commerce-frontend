@@ -4,24 +4,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
 const Products = () => {
-  const { products, loading, error, fetchProducts, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, error, fetchProducts, addProduct, deleteProduct } = useProducts();
   const { logout } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: '',
-    subCategory: '',
     price: '',
     stock: '',
+    subCategory: '',
     description: '',
     brand: '',
     image: null,
-    promotion: [],
-    competitors: [],
-    ratings: {
-      average: 0,
-      count: 0
-    }
   });
 
   useEffect(() => {
@@ -30,43 +25,92 @@ const Products = () => {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    
-    // Append all text fields
-    Object.keys(newProduct).forEach(key => {
-      if (key === 'image') {
-        if (newProduct[key]) {
-          formData.append('image', newProduct[key]);
-        }
-      } else if (key === 'ratings') {
-        formData.append('ratings[average]', newProduct[key].average);
-        formData.append('ratings[count]', newProduct[key].count);
-      } else if (key === 'promotion' || key === 'competitors') {
-        formData.append(key, JSON.stringify(newProduct[key]));
-      } else {
-        formData.append(key, newProduct[key]);
-      }
-    });
+  
+    // Validate required fields
+    if (!newProduct.name || !newProduct.category || !newProduct.price || !newProduct.stock) {
+      alert('Please fill in all required fields (Name, Category, Price, Stock)');
+      return;
+    }
 
-    const result = await addProduct(formData);
-    if (result.success) {
-      setShowAddForm(false);
-      setNewProduct({
-        name: '',
-        category: '',
-        subCategory: '',
-        price: '',
-        stock: '',
-        description: '',
-        brand: '',
-        image: null,
-        promotion: [],
-        competitors: [],
-        ratings: {
-          average: 0,
-          count: 0
-        }
-      });
+    try {
+      let result;
+  
+      if (newProduct.image) {
+        // Create FormData for file upload - use field name that matches your backend multer config
+        const formData = new FormData();
+        formData.append('name', newProduct.name);
+        formData.append('category', newProduct.category);
+        formData.append('subCategory', newProduct.subCategory || '');
+        formData.append('price', newProduct.price);
+        formData.append('stock', newProduct.stock);
+        formData.append('description', newProduct.description || '');
+        formData.append('brand', newProduct.brand || '');
+        
+        // Try different field names that your backend might expect
+        // Check your backend multer config for the exact field name
+        formData.append('file', newProduct.image); // Most common
+        // If above doesn't work, try: formData.append('image', newProduct.image);
+        // Or check your backend route file for the exact field name
+  
+        result = await addProduct(formData);
+      } else {
+        // Send as JSON for products without images
+        const productData = {
+          name: newProduct.name,
+          category: newProduct.category,
+          price: Number(newProduct.price),
+          stock: Number(newProduct.stock),
+          subCategory: newProduct.subCategory || '',
+          description: newProduct.description || '',
+          brand: newProduct.brand || '',
+        };
+  
+        result = await addProduct(productData);
+      }
+  
+      // Check if request was successful (status 201 means created successfully)
+      if (result && result._id) { // Backend returns the created product with _id
+        setShowAddForm(false);
+        setNewProduct({
+          name: '',
+          category: '',
+          price: '',
+          stock: '',
+          subCategory: '',
+          description: '',
+          brand: '',
+          image: null,
+        });
+        // Clear file input
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) fileInput.value = '';
+        
+        // Refresh products list
+        fetchProducts();
+        alert('Product added successfully!');
+      } else {
+        console.error('Unexpected response:', result);
+        alert('Product may have been added. Please refresh the page to check.');
+        fetchProducts(); // Refresh anyway
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+      
+      // More detailed error handling
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || 'Server error occurred';
+        alert(`Error: ${errorMessage}`);
+        console.error('Server error details:', error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        alert('Network error: Could not connect to server');
+        console.error('Network error:', error.request);
+      } else {
+        // Something else happened
+        alert('Error: ' + error.message);
+        console.error('Unexpected error:', error);
+      }
     }
   };
 
@@ -77,245 +121,198 @@ const Products = () => {
   };
 
   const handleImageChange = (e) => {
-    if (e.target.files[0]) {
-      setNewProduct({ ...newProduct, image: e.target.files[0] });
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        e.target.value = '';
+        return;
+      }
+      
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        e.target.value = '';
+        return;
+      }
+      
+      setNewProduct({ ...newProduct, image: file });
     }
   };
 
   if (loading) {
-    return <div className="text-center p-4">Loading...</div>;
+    return <div className="flex justify-center items-center min-h-[40vh] text-primary text-xl font-semibold">Loading...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-600 p-4">{error}</div>;
+    return <div className="text-center text-red-600 p-4 font-semibold">{error}</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Products</h1>
-        <div className="space-x-4">
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            {showAddForm ? 'Cancel' : 'Add Product'}
-          </button>
-          <button
-            onClick={logout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
-        </div>
+    <div className="container mx-auto px-2 md:px-4 py-8 bg-background text-text">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-text">Products</h1>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="bg-primary text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-primary-dark transition"
+        >
+          {showAddForm ? 'Cancel' : 'Add Product'}
+        </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleAddProduct} className="mb-8 p-4 bg-white rounded shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Required Fields */}
+        <div className="mb-10 max-w-2xl mx-auto bg-background-card rounded-2xl shadow-lg p-8 border border-background">
+          <h2 className="text-xl font-bold mb-4 text-primary">Add New Product</h2>
+          <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Required Information</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Product Name"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  required
+                <label className="block text-sm font-medium text-text mb-1">Name <span className="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  placeholder="Product Name" 
+                  value={newProduct.name} 
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} 
+                  required 
+                  className="input" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Category"
-                  value={newProduct.category}
-                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  required
+                <label className="block text-sm font-medium text-text mb-1">Category <span className="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  placeholder="Category" 
+                  value={newProduct.category} 
+                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} 
+                  required 
+                  className="input" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  placeholder="Price"
-                  value={newProduct.price}
-                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  required
-                  min="0"
+                <label className="block text-sm font-medium text-text mb-1">Price <span className="text-red-500">*</span></label>
+                <input 
+                  type="number" 
                   step="0.01"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stock <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  placeholder="Stock"
-                  value={newProduct.stock}
-                  onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                  className="border p-2 rounded w-full"
-                  required
                   min="0"
+                  placeholder="Price" 
+                  value={newProduct.price} 
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} 
+                  required 
+                  className="input" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text mb-1">Stock <span className="text-red-500">*</span></label>
+                <input 
+                  type="number" 
+                  min="0"
+                  placeholder="Stock" 
+                  value={newProduct.stock} 
+                  onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} 
+                  required 
+                  className="input" 
                 />
               </div>
             </div>
-
-            {/* Optional Fields */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Additional Information</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sub Category
-                </label>
-                <input
-                  type="text"
-                  placeholder="Sub Category"
-                  value={newProduct.subCategory}
-                  onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                  className="border p-2 rounded w-full"
+                <label className="block text-sm font-medium text-text mb-1">Sub Category</label>
+                <input 
+                  type="text" 
+                  placeholder="Sub Category" 
+                  value={newProduct.subCategory} 
+                  onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })} 
+                  className="input" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Brand
-                </label>
-                <input
-                  type="text"
-                  placeholder="Brand"
-                  value={newProduct.brand}
-                  onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
-                  className="border p-2 rounded w-full"
+                <label className="block text-sm font-medium text-text mb-1">Brand</label>
+                <input 
+                  type="text" 
+                  placeholder="Brand" 
+                  value={newProduct.brand} 
+                  onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })} 
+                  className="input" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  placeholder="Product Description"
-                  value={newProduct.description}
-                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="border p-2 rounded w-full h-32"
+                <label className="block text-sm font-medium text-text mb-1">Description</label>
+                <textarea 
+                  placeholder="Product Description" 
+                  value={newProduct.description} 
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} 
+                  className="input h-24" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="border p-2 rounded w-full"
+                <label className="block text-sm font-medium text-text mb-1">Product Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageChange} 
+                  className="input" 
                 />
+                {newProduct.image && (
+                  <p className="text-sm text-green-600 mt-1">Selected: {newProduct.image.name}</p>
+                )}
               </div>
             </div>
-          </div>
-
-          <div className="mt-6">
-            <p className="text-sm text-gray-500 mb-4">
-              <span className="text-red-500">*</span> Required fields
-            </p>
-            <button
-              type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              Add Product
-            </button>
-          </div>
-        </form>
+            <div className="md:col-span-2 flex justify-end">
+              <button 
+                type="submit" 
+                className="bg-primary text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-primary-dark transition"
+                disabled={loading}
+              >
+                {loading ? 'Adding...' : 'Add Product'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <div key={product._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-            <Link to={`/products/${product._id}`}>
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">No image available</span>
-                </div>
-              )}
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2 text-gray-900 hover:text-blue-600 transition-colors">
-                  {product.name}
-                </h2>
-                <p className="text-gray-600 mb-2">{product.category}</p>
-                {product.subCategory && (
-                  <p className="text-gray-600 mb-2">Sub Category: {product.subCategory}</p>
-                )}
-                <p className="text-2xl font-bold text-blue-600 mb-2">${product.price}</p>
-                <p className="text-gray-600 mb-2">Stock: {product.stock}</p>
-                {product.brand && (
-                  <p className="text-gray-600 mb-2">Brand: {product.brand}</p>
-                )}
-                {product.ratings && (
-                  <div className="flex items-center mb-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < Math.floor(product.ratings.average)
-                              ? 'text-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                      <span className="ml-2 text-sm text-gray-600">
-                        ({product.ratings.count})
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {product.promotion && product.promotion.length > 0 && (
-                  <div className="bg-green-100 p-2 rounded-lg mb-2">
-                    <p className="text-green-800 text-sm">Active Promotion</p>
+      {products.length === 0 ? (
+        <div className="text-center text-text-muted py-20 text-lg font-medium">No products found. Start by adding a new product!</div>
+      ) : (
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products.map((product) => (
+            <div key={product._id} className="bg-background-card rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="relative">
+                {product.imageUrl ? (
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover" />
+                ) : (
+                  <div className="w-full h-48 bg-background flex items-center justify-center">
+                    <span className="text-text-muted">No image available</span>
                   </div>
                 )}
               </div>
-            </Link>
-            <div className="p-4 border-t border-gray-200 flex justify-between">
-              <button
-                onClick={() => handleDelete(product._id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
-              >
-                Delete
-              </button>
-              <Link
-                to={`/products/${product._id}`}
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-              >
-                View Details
-              </Link>
+              <div className="p-5 flex-1 flex flex-col">
+                <h2 className="text-xl font-semibold mb-1 text-text hover:text-primary transition-colors">{product.name}</h2>
+                <p className="text-text-muted mb-1">{product.category}</p>
+                {product.subCategory && <p className="text-text-muted mb-1">Sub Category: {product.subCategory}</p>}
+                <p className="text-2xl font-bold text-primary mb-1">${product.price}</p>
+                <p className="text-text-muted mb-1">Stock: {product.stock}</p>
+                {product.brand && <p className="text-text-muted mb-1">Brand: {product.brand}</p>}
+                <div className="mt-auto flex gap-2 pt-4">
+                  <button
+                    onClick={() => handleDelete(product._id)}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors flex-1"
+                  >
+                    Delete
+                  </button>
+                  <Link
+                    to={`/products/${product._id}`}
+                    className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors flex-1 text-center"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Products; 
+export default Products;

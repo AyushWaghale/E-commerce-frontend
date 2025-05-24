@@ -7,18 +7,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          DEFAULT: '#1D4ED8',    // brand-blue
-          light: '#3B82F6',
-          dark: '#1E40AF',
+        primary: {
+          DEFAULT: '#FF6A13', // Main orange
+          light: '#FFEFE5',   // Light background
+          dark: '#E65A00',    // Darker orange (for hover, etc.)
         },
-      },
-      spacing: {
-        '128': '32rem',
-        '144': '36rem',
-      },
-      borderRadius: {
-        'xl': '1.25rem',
+        accent: '#FFB366',     // Accent orange
+        text: {
+          DEFAULT: '#23272F',  // Main text color
+          muted: '#6B7280',    // Muted/secondary text
+        },
+        background: {
+          DEFAULT: '#FFF8F3',  // Main background
+          card: '#FFF5EB',     // Card background
+        },
       },
     },
   },
