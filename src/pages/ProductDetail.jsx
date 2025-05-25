@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import { useAuth } from '../contexts/AuthContext';
 
+
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+        const response = await fetch(`https://e-commerce-backend-aeqi.onrender.com/api/products/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -39,7 +41,7 @@ const ProductDetail = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+        const response = await fetch(`https://e-commerce-backend-aeqi.onrender.com/api/products/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -68,7 +70,7 @@ const ProductDetail = () => {
     formData.append('dataset', file);
     formData.append('productId', product._id);
     try {
-      const response = await fetch('http://localhost:5000/api/products/upload-dataset', {
+      const response = await fetch('https://e-commerce-backend-aeqi.onrender.com/api/products/upload-dataset', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
