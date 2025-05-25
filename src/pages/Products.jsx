@@ -26,50 +26,26 @@ const Products = () => {
   const handleAddProduct = async (e) => {
     e.preventDefault();
   
-    // Validate required fields
     if (!newProduct.name || !newProduct.category || !newProduct.price || !newProduct.stock) {
       alert('Please fill in all required fields (Name, Category, Price, Stock)');
       return;
     }
-
+  
     try {
-      let result;
+      const productData = {
+        name: newProduct.name,
+        category: newProduct.category,
+        subCategory: newProduct.subCategory || '',
+        price: Number(newProduct.price),
+        stock: Number(newProduct.stock),
+        description: newProduct.description || '',
+        brand: newProduct.brand || '',
+        image: newProduct.image || null, // ✅ correct field name
+      };
   
-      if (newProduct.image) {
-        // Create FormData for file upload - use field name that matches your backend multer config
-        const formData = new FormData();
-        formData.append('name', newProduct.name);
-        formData.append('category', newProduct.category);
-        formData.append('subCategory', newProduct.subCategory || '');
-        formData.append('price', newProduct.price);
-        formData.append('stock', newProduct.stock);
-        formData.append('description', newProduct.description || '');
-        formData.append('brand', newProduct.brand || '');
-        
-        // Try different field names that your backend might expect
-        // Check your backend multer config for the exact field name
-        formData.append('file', newProduct.image); // Most common
-        // If above doesn't work, try: formData.append('image', newProduct.image);
-        // Or check your backend route file for the exact field name
+      const result = await addProduct(productData);
   
-        result = await addProduct(formData);
-      } else {
-        // Send as JSON for products without images
-        const productData = {
-          name: newProduct.name,
-          category: newProduct.category,
-          price: Number(newProduct.price),
-          stock: Number(newProduct.stock),
-          subCategory: newProduct.subCategory || '',
-          description: newProduct.description || '',
-          brand: newProduct.brand || '',
-        };
-  
-        result = await addProduct(productData);
-      }
-  
-      // Check if request was successful (status 201 means created successfully)
-      if (result && result._id) { // Backend returns the created product with _id
+      if (result && result._id) {
         setShowAddForm(false);
         setNewProduct({
           name: '',
@@ -81,38 +57,28 @@ const Products = () => {
           brand: '',
           image: null,
         });
-        // Clear file input
+  
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = '';
-        
-        // Refresh products list
+  
         fetchProducts();
         alert('Product added successfully!');
       } else {
-        console.error('Unexpected response:', result);
-        alert('Product may have been added. Please refresh the page to check.');
-        fetchProducts(); // Refresh anyway
+        alert('Unexpected response. Please refresh the page.');
+        fetchProducts();
       }
     } catch (error) {
       console.error('Error adding product:', error);
-      
-      // More detailed error handling
       if (error.response) {
-        // Server responded with error status
-        const errorMessage = error.response.data?.message || 'Server error occurred';
-        alert(`Error: ${errorMessage}`);
-        console.error('Server error details:', error.response.data);
+        alert(`Server Error: ${error.response.data.message || 'Unknown error'}`);
       } else if (error.request) {
-        // Request was made but no response received
         alert('Network error: Could not connect to server');
-        console.error('Network error:', error.request);
       } else {
-        // Something else happened
         alert('Error: ' + error.message);
-        console.error('Unexpected error:', error);
       }
     }
   };
+  
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
