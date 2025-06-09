@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
 const features = [
   {
@@ -46,98 +45,27 @@ const features = [
   },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-    },
-  },
-};
-
 export default function LandingFeatures() {
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-background relative overflow-hidden">
-      {/* Animated background elements */}
-      <motion.div
-        className="absolute inset-0 opacity-5"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.05 }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-      >
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary rounded-full blur-3xl" />
-      </motion.div>
-
-      <div className="container mx-auto px-4 relative">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-text">
-            Powerful Features for <span className="text-primary relative">
-              Accurate Forecasting
-              <motion.span
-                className="absolute -bottom-1 left-0 w-full h-1 bg-primary"
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              />
-            </span>
+            Powerful Features for <span className="text-primary">Accurate Forecasting</span>
           </h2>
           <p className="text-lg text-text-muted max-w-2xl mx-auto">
             Our platform combines advanced algorithms with an intuitive interface to give you the insights you need.
           </p>
-        </motion.div>
-
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-        >
+        </div>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              whileHover={{ 
-                scale: 1.02,
-                transition: { duration: 0.2 }
-              }}
-              className="group bg-background-card/50 backdrop-blur-sm rounded-xl p-8 shadow-lg hover:shadow-xl border border-gray-200/20 transition-all duration-300"
-            >
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="mb-4 flex items-center justify-center"
-              >
-                {feature.icon}
-              </motion.div>
-              <h3 className="text-xl font-semibold mb-2 text-text group-hover:text-primary transition-colors duration-200">
-                {feature.title}
-              </h3>
-              <p className="text-text-muted group-hover:text-text transition-colors duration-200">
-                {feature.description}
-              </p>
-            </motion.div>
+            <div key={i} className="bg-background-card rounded-xl p-8 shadow hover:shadow-lg border border-background transition">
+              <div className="mb-4 flex items-center justify-center">{feature.icon}</div>
+              <h3 className="text-xl font-semibold mb-2 text-text">{feature.title}</h3>
+              <p className="text-text-muted">{feature.description}</p>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

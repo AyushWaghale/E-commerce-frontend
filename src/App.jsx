@@ -8,6 +8,7 @@ import ProductEdit from './pages/ProductEdit';
 import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
 import Landing from './pages/Landing';
+import Documentation from './pages/Documentation';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -25,6 +26,7 @@ const App = () => {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/docs" element={<Documentation />} />
               <Route
                 path="/products"
                 element={

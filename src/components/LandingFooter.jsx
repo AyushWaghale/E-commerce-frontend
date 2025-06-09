@@ -1,177 +1,50 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Twitter, Linkedin, Facebook, Mail, Phone, MapPin } from 'lucide-react';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-    },
-  },
-};
 
 export default function LandingFooter() {
   return (
-    <footer className="bg-gradient-to-b from-text to-text/90 py-12 text-white relative overflow-hidden">
-      {/* Animated background elements */}
-      <motion.div
-        className="absolute inset-0 opacity-5"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.05 }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-      >
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary rounded-full blur-3xl" />
-      </motion.div>
-
-      <div className="container mx-auto px-4 relative">
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-8 md:grid-cols-4"
-        >
-          <motion.div variants={itemVariants} className="md:col-span-1">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-2 mb-2"
-            >
-              <motion.svg 
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-                xmlns="http://www.w3.org/2000/svg" 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="text-primary"
-              >
-                <line x1="18" x2="18" y1="20" y2="10"/>
-                <line x1="12" x2="12" y1="20" y2="4"/>
-                <line x1="6" x2="6" y1="20" y2="14"/>
-              </motion.svg>
-              <span className="font-bold text-lg">Sales ForecastPro</span>
-            </motion.div>
-            <p className="text-text-muted mb-4">Transform your business with accurate, AI-powered sales forecasting.</p>
-            <div className="flex gap-3">
-              <motion.a 
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                href="#" 
-                className="text-text-muted hover:text-primary transition-colors duration-200"
-              >
-                <Twitter size={20} />
-              </motion.a>
-              <motion.a 
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                href="#" 
-                className="text-text-muted hover:text-primary transition-colors duration-200"
-              >
-                <Linkedin size={20} />
-              </motion.a>
-              <motion.a 
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                href="#" 
-                className="text-text-muted hover:text-primary transition-colors duration-200"
-              >
-                <Facebook size={20} />
-              </motion.a>
-            </div>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <h3 className="font-semibold mb-3">Quick Links</h3>
-            <ul className="space-y-2">
-              {['Home', 'Product', 'Docs', 'About'].map((link) => (
-                <motion.li 
-                  key={link}
-                  whileHover={{ x: 5 }}
-                  className="transition-colors duration-200"
-                >
-                  <a href="#" className="text-text-muted hover:text-primary flex items-center gap-2">
-                    <span className="w-1 h-1 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {link}
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <h3 className="font-semibold mb-3">Resources</h3>
-            <ul className="space-y-2">
-              {['Blog', 'Case Studies', 'Help Center', 'Webinars'].map((resource) => (
-                <motion.li 
-                  key={resource}
-                  whileHover={{ x: 5 }}
-                  className="transition-colors duration-200"
-                >
-                  <a href="#" className="text-text-muted hover:text-primary flex items-center gap-2">
-                    <span className="w-1 h-1 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {resource}
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <h3 className="font-semibold mb-3">Contact</h3>
-            <ul className="space-y-2 text-text-muted">
-              <motion.li 
-                whileHover={{ x: 5 }}
-                className="flex items-start gap-2 transition-colors duration-200 hover:text-primary"
-              >
-                <Mail size={20} className="flex-shrink-0 mt-1" />
-                <span>info@salesforecastpro.com</span>
-              </motion.li>
-              <motion.li 
-                whileHover={{ x: 5 }}
-                className="flex items-start gap-2 transition-colors duration-200 hover:text-primary"
-              >
-                <Phone size={20} className="flex-shrink-0 mt-1" />
-                <span>+1 (555) 123-4567</span>
-              </motion.li>
-              <motion.li 
-                whileHover={{ x: 5 }}
-                className="flex items-start gap-2 transition-colors duration-200 hover:text-primary"
-              >
-                <MapPin size={20} className="flex-shrink-0 mt-1" />
-                <span>123 Forecast Street, Suite 456, San Francisco, CA 94103</span>
-              </motion.li>
-            </ul>
-          </motion.div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mt-12 border-t border-background/20 pt-6 text-center text-text-muted text-sm"
-        >
-          &copy; {new Date().getFullYear()} Sales ForecastPro. All rights reserved.
-        </motion.div>
+    <footer className="bg-text py-12 text-white">
+      <div className="container mx-auto px-4 grid gap-8 md:grid-cols-4">
+        <div className="md:col-span-1">
+          <div className="flex items-center gap-2 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+            <span className="font-bold text-lg">Sales ForecastPro</span>
+          </div>
+          <p className="text-text-muted mb-4">Transform your business with accurate, AI-powered sales forecasting.</p>
+          <div className="flex gap-3">
+            <a href="#" className="text-text-muted hover:text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a>
+            <a href="#" className="text-text-muted hover:text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+            <a href="#" className="text-text-muted hover:text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold mb-3">Quick Links</h3>
+          <ul className="space-y-2">
+            <li><a href="#" className="text-text-muted hover:text-primary">Home</a></li>
+            <li><a href="#features" className="text-text-muted hover:text-primary">Product</a></li>
+            <li><a href="#" className="text-text-muted hover:text-primary">Docs</a></li>
+            <li><a href="#" className="text-text-muted hover:text-primary">About</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-semibold mb-3">Resources</h3>
+          <ul className="space-y-2">
+            <li><a href="#" className="text-text-muted hover:text-primary">Blog</a></li>
+            <li><a href="#" className="text-text-muted hover:text-primary">Case Studies</a></li>
+            <li><a href="#" className="text-text-muted hover:text-primary">Help Center</a></li>
+            <li><a href="#" className="text-text-muted hover:text-primary">Webinars</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-semibold mb-3">Contact</h3>
+          <ul className="space-y-2 text-text-muted">
+            <li className="flex items-start gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> info@salesforecastpro.com</li>
+            <li className="flex items-start gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> +1 (555) 123-4567</li>
+            <li className="flex items-start gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> 123 Forecast Street, Suite 456, San Francisco, CA 94103</li>
+          </ul>
+        </div>
+      </div>
+      <div className="mt-12 border-t border-background pt-6 text-center text-text-muted text-sm">
+        &copy; {new Date().getFullYear()} Sales ForecastPro. All rights reserved.
       </div>
     </footer>
   );

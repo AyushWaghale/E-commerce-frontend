@@ -93,59 +93,66 @@ const ProductEdit = () => {
   if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            { label: 'Name', name: 'name' },
-            { label: 'Category', name: 'category' },
-            { label: 'Sub Category', name: 'subCategory' },
-            { label: 'Price', name: 'price', type: 'number' },
-            { label: 'Stock', name: 'stock', type: 'number' },
-            { label: 'Brand', name: 'brand' }
-          ].map(({ label, name, type = 'text' }) => (
-            <div key={name}>
-              <label className="block text-sm font-medium mb-1">{label}</label>
-              <input
-                type={type}
-                name={name}
-                value={product[name]}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-                required={['name', 'category', 'price', 'stock'].includes(name)}
-                min={type === 'number' ? 0 : undefined}
-                step={name === 'price' ? 0.01 : undefined}
-              />
-            </div>
-          ))}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea
-              name="description"
-              value={product.description}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 h-32 focus:outline-none focus:ring focus:ring-blue-300"
-            />
-          </div>
+    <div className="container mx-auto px-4 py-8 bg-background text-text">
+  <h1 className="text-3xl font-bold mb-8 text-center">Edit Product</h1>
+
+  <form
+    onSubmit={handleSubmit}
+    className="max-w-3xl mx-auto bg-background-card rounded-2xl shadow-xl p-8"
+  >
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[
+        { label: 'Name', name: 'name' },
+        { label: 'Category', name: 'category' },
+        { label: 'Sub Category', name: 'subCategory' },
+        { label: 'Price', name: 'price', type: 'number' },
+        { label: 'Stock', name: 'stock', type: 'number' },
+        { label: 'Brand', name: 'brand' }
+      ].map(({ label, name, type = 'text' }) => (
+        <div key={name}>
+          <label className="block text-sm font-semibold mb-1 text-text">{label}</label>
+          <input
+            type={type}
+            name={name}
+            value={product[name]}
+            onChange={handleChange}
+            required={['name', 'category', 'price', 'stock'].includes(name)}
+            min={type === 'number' ? 0 : undefined}
+            step={name === 'price' ? 0.01 : undefined}
+            className="w-full px-4 py-2 rounded-md bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text"
+          />
         </div>
-        <div className="mt-6 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => navigate(`/products/${id}`)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Update Product
-          </button>
-        </div>
-      </form>
+      ))}
+
+      <div className="md:col-span-2">
+        <label className="block text-sm font-semibold mb-1 text-text">Description</label>
+        <textarea
+          name="description"
+          value={product.description}
+          onChange={handleChange}
+          className="w-full px-4 py-2 h-32 rounded-md bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-text"
+        />
+      </div>
     </div>
+
+    <div className="mt-8 flex justify-end gap-4">
+      <button
+        type="button"
+        onClick={() => navigate(`/products/${id}`)}
+        className="px-5 py-2 border border-border text-text-muted rounded-md hover:bg-muted transition"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        className="px-5 py-2 bg-primary text-white font-semibold rounded-md hover:bg-primary-dark transition"
+      >
+        Update Product
+      </button>
+    </div>
+  </form>
+</div>
+
   );
 };
 
