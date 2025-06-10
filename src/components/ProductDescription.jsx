@@ -25,7 +25,7 @@ const ProductDescription = ({ product, user, handleDatasetUpload, datasetInputRe
           <div className="flex justify-between items-start">
             <div className="space-y-2">
               <h1 className="text-4xl font-extrabold bg-gradient-to-r from-primary via-primary to-foreground bg-clip-text text-transparent tracking-tight">
-                {product.name}
+                {product.product_name}
               </h1>
               <div className="h-1 w-24 bg-gradient-to-r from-primary to-accent rounded-full"></div>
             </div>

@@ -33,7 +33,7 @@ const Products = () => {
   
     try {
       const productData = {
-        name: newProduct.name,
+        product_name: newProduct.name,
         category: newProduct.category,
         subCategory: newProduct.subCategory || '',
         price: Number(newProduct.price),
@@ -48,7 +48,7 @@ const Products = () => {
       if (result && result._id) {
         setShowAddForm(false);
         setNewProduct({
-          name: '',
+          product_name: '',
           category: '',
           price: '',
           stock: '',
