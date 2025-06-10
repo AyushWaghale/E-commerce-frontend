@@ -9,6 +9,8 @@ import Header from './components/Header';
 import { useAuth } from './contexts/AuthContext';
 import Landing from './pages/Landing';
 import Documentation from './pages/Documentation';
+import Dashboard from './pages/Dashboard';
+import PredictionPage from './pages/PredictionPage';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -52,6 +54,8 @@ const App = () => {
                 }
               />
               <Route path="/" element={<Landing />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/prediction" element={<PredictionPage />} />
             </Routes>
           </main>
         </div>

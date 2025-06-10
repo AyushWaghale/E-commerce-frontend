@@ -7,7 +7,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 } from 'chart.js';
 
 ChartJS.register(
@@ -17,11 +18,12 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const PredictionChart = ({ predictionData }) => {
-  // Generate dates for the x-axis (assuming predictions are for next 365 days)
+  // Generate dates for the x-axis
   const generateDates = () => {
     const dates = [];
     const today = new Date();
@@ -33,37 +35,84 @@ const PredictionChart = ({ predictionData }) => {
     return dates;
   };
 
+  // Calculate moving average for smoother line
+  const calculateMovingAverage = (data, windowSize = 7) => {
+    const result = [];
+    for (let i = 0; i < data.length; i++) {
+      const start = Math.max(0, i - windowSize + 1);
+      const end = i + 1;
+      const slice = data.slice(start, end);
+      const average = slice.reduce((a, b) => a + b, 0) / slice.length;
+      result.push(average);
+    }
+    return result;
+  };
+
+  const movingAverage = calculateMovingAverage(predictionData);
+
   const chartData = {
     labels: generateDates(),
     datasets: [
       {
-        label: 'Predicted Sales',
+        label: 'Daily Sales',
         data: predictionData,
-        borderColor: 'rgb(75, 192, 192)',
+        borderColor: 'rgba(75, 192, 192, 0.2)',
         backgroundColor: 'rgba(75, 192, 192, 0.1)',
         tension: 0.4,
         fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 4,
       },
+      {
+        label: 'Trend Line',
+        data: movingAverage,
+        borderColor: 'rgb(75, 192, 192)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        pointRadius: 0,
+      }
     ],
   };
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+        }
       },
       title: {
         display: true,
         text: 'Sales Prediction for Next 365 Days',
         font: {
-          size: 16
+          size: 16,
+          weight: 'bold'
+        },
+        padding: {
+          top: 10,
+          bottom: 20
         }
       },
       tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        titleColor: '#1f2937',
+        bodyColor: '#1f2937',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 6,
         callbacks: {
           label: function(context) {
-            return `Predicted Sales: ${context.parsed.y.toFixed(2)} units`;
+            const label = context.dataset.label || '';
+            const value = context.parsed.y.toFixed(2);
+            return `${label}: ${value} units`;
           }
         }
       }
@@ -75,8 +124,12 @@ const PredictionChart = ({ predictionData }) => {
           display: true,
           text: 'Sales (units)',
           font: {
-            size: 14
+            size: 14,
+            weight: 'bold'
           }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
           callback: function(value) {
@@ -89,12 +142,18 @@ const PredictionChart = ({ predictionData }) => {
           display: true,
           text: 'Date',
           font: {
-            size: 14
+            size: 14,
+            weight: 'bold'
           }
+        },
+        grid: {
+          display: false
         },
         ticks: {
           maxRotation: 45,
-          minRotation: 45
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 12
         }
       }
     },
@@ -103,16 +162,14 @@ const PredictionChart = ({ predictionData }) => {
       intersect: false,
     },
     elements: {
-      point: {
-        radius: 0, // Hide points to reduce visual clutter
-        hitRadius: 10, // Keep hover functionality
-        hoverRadius: 4 // Show points on hover
+      line: {
+        tension: 0.4
       }
     }
   };
 
   return (
-    <div className="h-96 w-full">
+    <div className="h-full w-full">
       <Line data={chartData} options={chartOptions} />
     </div>
   );

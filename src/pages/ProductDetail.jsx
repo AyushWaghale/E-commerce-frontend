@@ -6,6 +6,7 @@ import usePrediction from '../hooks/usePrediction';
 import PredictButton from '../components/prediction/PredictButton';
 import PredictionModal from '../components/prediction/PredictionModal';
 import { Line } from 'react-chartjs-2';
+import { FaBoxes, FaChartLine, FaClipboardList } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -16,6 +17,10 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+
+import ProductDescription from '../components/ProductDescription';
+import SalesForecasting from '../components/SalesForecasting';
+import InventoryManagement from '../components/InventoryManagement';
 
 ChartJS.register(
   CategoryScale,
@@ -38,6 +43,7 @@ const ProductDetail = () => {
   const [datasetError, setDatasetError] = useState('');
   const [datasetSuccess, setDatasetSuccess] = useState('');
   const datasetInputRef = useRef();
+  const [activeSection, setActiveSection] = useState('description'); // 'description', 'forecasting', 'inventory'
 
   const {
     predictionData,
@@ -159,6 +165,45 @@ const ProductDetail = () => {
     }
   };
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'description':
+        return (
+          <ProductDescription
+            product={product}
+            user={user}
+            handleDelete={handleDelete}
+            handleDatasetUpload={handleDatasetUpload}
+            datasetInputRef={datasetInputRef}
+            datasetUploading={datasetUploading}
+            datasetError={datasetError}
+            datasetSuccess={datasetSuccess}
+          />
+        );
+      case 'forecasting':
+        return (
+          <SalesForecasting
+            product={product}
+            predictionData={predictionData}
+            predictionLoading={predictionLoading}
+            predictionError={predictionError}
+            isModalOpen={isModalOpen}
+            getPrediction={getPrediction}
+            closeModal={closeModal}
+            chartOptions={chartOptions}
+          />
+        );
+      case 'inventory':
+        return (
+          <InventoryManagement
+            product={product}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-background">
@@ -189,152 +234,66 @@ const ProductDetail = () => {
 
   return (
     <div className="container mx-auto px-4 py-10 bg-background text-text">
-      <div className="bg-background-card rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
-        <div className="md:flex flex-col md:flex-row gap-6">
-
-          {/* Product Image */}
-          <div className="md:w-1/2">
-            {product.imageUrl ? (
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-96 object-cover rounded-l-2xl"
-              />
-            ) : (
-              <div className="w-full h-96 bg-gray-100 flex items-center justify-center text-gray-400 text-lg">
-                No image available
-              </div>
-            )}
-          </div>
-
-          {/* Product Details */}
-          <div className="md:w-1/2 p-6 md:p-8 space-y-6">
-            <div className="flex justify-between items-start">
-              <h1 className="text-4xl font-extrabold text-primary">{product.name}</h1>
-              <div className="flex gap-2">
+      <div className="flex items-center mb-6">
+        <button onClick={() => navigate(-1)} className="text-primary hover:text-primary-dark transition duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back
+        </button>
+      </div>
+      <div className="bg-background-card rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 md:flex">
+        {/* Dashboard Navigation */}
+        <div className="w-full md:w-64 bg-primary text-white p-6 space-y-6">
+          <h2 className="text-2xl font-bold mb-6">Dashboard Navigation</h2>
+          <nav>
+            <ul className="space-y-3">
+              <li>
                 <button
-                  onClick={() => navigate(`/products/${id}/edit`)}
-                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition"
+                  onClick={() => setActiveSection('description')}
+                  className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200
+                    ${activeSection === 'description' ? 'bg-primary-dark text-white shadow-md' : 'hover:bg-primary-dark'}`}
                 >
-                  Edit
+                  <FaClipboardList className="mr-3" />
+                  Product Description
+                  
                 </button>
+              </li>
+              <li>
                 <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                  onClick={() => setActiveSection('forecasting')}
+                  className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200
+                    ${activeSection === 'forecasting' ? 'bg-primary-dark text-white shadow-md' : 'hover:bg-primary-dark'}`}
                 >
-                  Delete
+                  <FaChartLine className="mr-3" />
+                  Sales Forecasting
+                 
                 </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
-              <div>
-                <h2 className="font-semibold">Category</h2>
-                <p className="text-text-muted">{product.category}</p>
-              </div>
-              {product.subCategory && (
-                <div>
-                  <h2 className="font-semibold">Sub Category</h2>
-                  <p className="text-text-muted">{product.subCategory}</p>
-                </div>
-              )}
-              <div>
-                <h2 className="font-semibold">Price</h2>
-                <p className="text-text-muted">${product.price}</p>
-              </div>
-              <div>
-                <h2 className="font-semibold">Stock</h2>
-                <p className="text-text-muted">{product.stock} units</p>
-              </div>
-              {product.brand && (
-                <div>
-                  <h2 className="font-semibold">Brand</h2>
-                  <p className="text-text-muted">{product.brand}</p>
-                </div>
-              )}
-              {product.ratings && (
-                <div>
-                  <h2 className="font-semibold">Ratings</h2>
-                  <p className="text-text-muted">
-                    {product.ratings.average} / 5 ({product.ratings.count} reviews)
-                  </p>
-                </div>
-              )}
-              {product.description && (
-                <div className="col-span-full">
-                  <h2 className="font-semibold">Description</h2>
-                  <p className="text-text-muted">{product.description}</p>
-                </div>
-              )}
-            </div>
-            {/* Show uploaded dataset if available */}
-            {product.datasetUrl && (
-              <div className="mt-4 bg-gray-100 p-4 rounded-md flex items-center justify-between">
-                <div className="text-text-muted truncate">
-                  <span className="font-medium text-text">Uploaded Dataset: </span> 
-                </div>
-                <a
-                  href={product.datasetUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-                >
-                  Download
-                </a>
-              </div>
-            )}
-
-            {/* Prediction Button */}
-            {product.datasetUrl && (
-              <PredictButton
-                onClick={getPrediction}
-                isLoading={predictionLoading}
-                error={predictionError}
-              />
-            )}
-
-            {/* Dataset Upload Section */}
-            <div className="pt-6 border-t border-border">
-              <h2 className="text-lg font-semibold mb-4">Upload Dataset</h2>
-              <form onSubmit={handleDatasetUpload} className="space-y-4">
-                <input
-                  type="file"
-                  ref={datasetInputRef}
-                  className="block w-full text-sm text-text-muted
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-primary file:text-white
-                hover:file:bg-primary-dark transition"
-                />
+              </li>
+              <li>
                 <button
-                  type="submit"
-                  disabled={datasetUploading}
-                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition disabled:opacity-50"
+                  onClick={() => setActiveSection('inventory')}
+                  className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200
+                    ${activeSection === 'inventory' ? 'bg-primary-dark text-white shadow-md' : 'hover:bg-primary-dark'}`}
                 >
-                  {datasetUploading ? 'Uploading...' : 'Upload Dataset'}
+                  <FaBoxes className="mr-3" />
+                  Inventory Management
+                 
                 </button>
-                {datasetError && (
-                  <p className="text-red-600 text-sm">{datasetError}</p>
-                )}
-                {datasetSuccess && (
-                  <p className="text-green-600 text-sm">{datasetSuccess}</p>
-                )}
-              </form>
-            </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 p-6 md:p-8">
+          <div className="bg-white rounded-xl shadow-lg">
+            {renderContent()}
           </div>
         </div>
       </div>
-
-      {/* Prediction Modal */}
-      <PredictionModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        predictionData={predictionData}
-      />
     </div>
   );
 };
 
-export default ProductDetail; 
+export default ProductDetail;

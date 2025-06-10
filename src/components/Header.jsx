@@ -13,7 +13,8 @@ const Header = () => {
         </Link>
         <nav className="hidden md:flex items-center gap-8">
           <Link to="/" className="text-text hover:text-primary transition">Home</Link>
-          <Link to="/products" className="text-text hover:text-primary transition">Product</Link>
+          <Link to="/products" className="text-text hover:text-primary transition">Products</Link>
+          <Link to="/prediction" className="text-text hover:text-primary transition">Predictions</Link>
           <Link to="/docs" className="text-text hover:text-primary transition">Docs</Link>
 
           {user ? (
