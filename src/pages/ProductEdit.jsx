@@ -8,7 +8,7 @@ const ProductEdit = () => {
   const { products, loading, error, fetchProducts } = useProducts();
 
   const [product, setProduct] = useState({
-    name: '',
+    product_name: '',
     category: '',
     subCategory: '',
     price: '',
@@ -102,7 +102,7 @@ const ProductEdit = () => {
   >
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {[
-        { label: 'Name', name: 'name' },
+        { label: 'Name', name: 'product_name' },
         { label: 'Category', name: 'category' },
         { label: 'Sub Category', name: 'subCategory' },
         { label: 'Price', name: 'price', type: 'number' },

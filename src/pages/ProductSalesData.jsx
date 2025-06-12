@@ -29,6 +29,8 @@ const ProductSalesData = () => {
     product_name: productData?.product_name || '',
     price: productData?.price || '',
     stock: productData?.stock || '',
+    category: productData?.category || '',
+    brand: productData?.brand || '',
     description: productData?.description || '',
     promotion: {
       ...defaultPromotion,
