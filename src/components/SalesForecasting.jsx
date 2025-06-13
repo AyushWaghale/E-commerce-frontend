@@ -1,24 +1,12 @@
 import React from 'react';
-import { Line } from 'react-chartjs-2';
 import { FaChartLine, FaEdit } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import PredictButton from './prediction/PredictButton';
-import PredictionModal from './prediction/PredictionModal';
+import PredictionChart from './prediction/PredictionChart';
 
-const SalesForecasting = ({ product, predictionData, predictionLoading, predictionError, isModalOpen, getPrediction, closeModal, chartOptions }) => {
+const SalesForecasting = ({ product, predictionData, predictionLoading, predictionError, getPrediction, viewMode, setViewMode }) => {
   const navigate = useNavigate();
-  const chartData = predictionData ? {
-    labels: predictionData.dates,
-    datasets: [
-      {
-        label: 'Predicted Sales',
-        data: predictionData.predictions,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-      },
-    ],
-  } : null;
-
+  
   // Check if product has necessary sales data for forecasting
   const hasSalesData = product && product.promotion && product.market_demand &&
                        (product.promotion.Old_promotion || product.promotion.Upcoming_promotion || product.promotion.Competitor_promotion_effect) &&
@@ -64,23 +52,34 @@ const SalesForecasting = ({ product, predictionData, predictionLoading, predicti
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Sales Performance (Weekly)</h3>
-            {chartData ? (
-              <Line data={chartData} options={chartOptions} />
-            ) : (
-              <div className="text-center text-gray-500 py-10">No prediction data available. Upload a dataset to get predictions.</div>
-            )}
+            <div className="flex justify-center space-x-4 mb-4">
+              <button
+                onClick={() => setViewMode('daily')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${viewMode === 'daily' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Daily
+              </button>
+              <button
+                onClick={() => setViewMode('weekly')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${viewMode === 'weekly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Weekly
+              </button>
+              <button
+                onClick={() => setViewMode('monthly')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${viewMode === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Monthly
+              </button>
+            </div>
+            <div style={{ height: '500px' }}> 
+              <PredictionChart predictionData={predictionData} />
+            </div>
             {predictionLoading && <p className="text-center text-blue-500">Loading prediction...</p>}
             {predictionError && <p className="text-center text-red-500">Error: {predictionError}</p>}
             <div className="mt-6 flex justify-center">
               <PredictButton onClick={() => getPrediction(product._id)} disabled={predictionLoading} />
             </div>
-            <PredictionModal
-              isOpen={isModalOpen}
-              onClose={closeModal}
-              predictionData={predictionData}
-              error={predictionError}
-              loading={predictionLoading}
-            />
           </div>
         </>
       )}

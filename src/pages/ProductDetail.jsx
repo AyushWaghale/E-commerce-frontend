@@ -4,7 +4,6 @@ import { useProducts } from '../hooks/useProducts';
 import { useAuth } from '../contexts/AuthContext';
 import usePrediction from '../hooks/usePrediction';
 import PredictButton from '../components/prediction/PredictButton';
-import PredictionModal from '../components/prediction/PredictionModal';
 import { Line } from 'react-chartjs-2';
 import { FaBoxes, FaChartLine, FaClipboardList } from 'react-icons/fa';
 import {
@@ -44,15 +43,99 @@ const ProductDetail = () => {
   const [datasetSuccess, setDatasetSuccess] = useState('');
   const datasetInputRef = useRef();
   const [activeSection, setActiveSection] = useState('description'); // 'description', 'forecasting', 'inventory'
+  const [viewMode, setViewMode] = useState('daily'); // 'daily', 'weekly', 'monthly'
 
   const {
-    predictionData,
+    predictionData: rawPredictionData, // Rename to avoid conflict
     isLoading: predictionLoading,
     error: predictionError,
-    isModalOpen,
     getPrediction,
-    closeModal,
   } = usePrediction(id);
+
+  // Helper to aggregate data weekly
+  const aggregateWeekly = (data) => {
+    const weeklyPredictions = [];
+    const weeklyDates = [];
+    if (!data || !data.predictions || data.predictions.length === 0) {
+      return { predictions: [], dates: [] };
+    }
+
+    const dailyPredictions = data.predictions;
+    const startDate = new Date(data.start_date || new Date());
+
+    for (let i = 0; i < dailyPredictions.length; i++) {
+      const weekIndex = Math.floor(i / 7);
+      if (!weeklyPredictions[weekIndex]) {
+        weeklyPredictions[weekIndex] = 0;
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + (weekIndex * 7));
+        weeklyDates[weekIndex] = date.toISOString().split('T')[0];
+      }
+      weeklyPredictions[weekIndex] += dailyPredictions[i];
+    }
+    return { predictions: weeklyPredictions, dates: weeklyDates };
+  };
+
+  // Helper to aggregate data monthly
+  const aggregateMonthly = (data) => {
+    const monthlyPredictions = [];
+    const monthlyDates = [];
+    if (!data || !data.predictions || data.predictions.length === 0) {
+      return { predictions: [], dates: [] };
+    }
+
+    const dailyPredictions = data.predictions;
+    const startDate = new Date(data.start_date || new Date());
+
+    let currentMonth = startDate.getMonth();
+    let currentMonthSum = 0;
+    let monthStartIndex = 0;
+
+    for (let i = 0; i < dailyPredictions.length; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+
+      if (currentDate.getMonth() !== currentMonth) {
+        // Push previous month's data
+        monthlyPredictions.push(currentMonthSum);
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + monthStartIndex);
+        monthlyDates.push(date.toISOString().split('T')[0]);
+
+        // Reset for new month
+        currentMonth = currentDate.getMonth();
+        currentMonthSum = dailyPredictions[i];
+        monthStartIndex = i;
+      } else {
+        currentMonthSum += dailyPredictions[i];
+      }
+    }
+    // Push data for the last month
+    if (currentMonthSum > 0) {
+      monthlyPredictions.push(currentMonthSum);
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + monthStartIndex);
+      monthlyDates.push(date.toISOString().split('T')[0]);
+    }
+
+    return { predictions: monthlyPredictions, dates: monthlyDates };
+  };
+
+  const getProcessedPredictionData = () => {
+    if (!rawPredictionData) return null;
+
+    switch (viewMode) {
+      case 'weekly':
+        return aggregateWeekly(rawPredictionData);
+      case 'monthly':
+        return aggregateMonthly(rawPredictionData);
+      case 'daily':
+      default:
+        return rawPredictionData;
+    }
+  };
+
+  const predictionData = getProcessedPredictionData(); // Use the processed data
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -125,46 +208,6 @@ const ProductDetail = () => {
     }
   };
 
-  const chartData = predictionData ? {
-    labels: predictionData.dates,
-    datasets: [
-      {
-        label: 'Predicted Sales',
-        data: predictionData.predictions,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-      },
-    ],
-  } : null;
-
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Sales Prediction',
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Sales'
-        }
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Date'
-        }
-      }
-    }
-  };
-
   const renderContent = () => {
     switch (activeSection) {
       case 'description':
@@ -187,10 +230,9 @@ const ProductDetail = () => {
             predictionData={predictionData}
             predictionLoading={predictionLoading}
             predictionError={predictionError}
-            isModalOpen={isModalOpen}
             getPrediction={getPrediction}
-            closeModal={closeModal}
-            chartOptions={chartOptions}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
           />
         );
       case 'inventory':

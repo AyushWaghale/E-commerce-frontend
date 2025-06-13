@@ -1,62 +1,94 @@
 import { useState } from 'react';
 import PredictionChart from '../components/prediction/PredictionChart';
 import PredictionForm from '../components/prediction/PredictionForm';
+import usePrediction from '../hooks/usePrediction';
 
 const PredictionPage = () => {
-  const [predictionData, setPredictionData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { predictionData: rawPredictionData, isLoading, error, getPrediction } = usePrediction();
+  const [viewMode, setViewMode] = useState('daily');
 
-  const getPrediction = async (formData) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      // Log the request data
-      console.log('Sending prediction request:', {
-        url: 'http://localhost:5000/train_predict',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
-      });
+  const aggregateWeekly = (data) => {
+    const weeklyPredictions = [];
+    const weeklyDates = [];
+    if (!data || !data.predictions || data.predictions.length === 0) {
+      return { predictions: [], dates: [] };
+    }
 
-      const response = await fetch('http://localhost:5000/train_predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData),
-      });
+    const dailyPredictions = data.predictions;
+    const startDate = new Date(data.start_date || new Date());
 
-      // Log the response status and headers
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Error response:', errorData);
-        throw new Error(errorData.message || `Server error: ${response.status}`);
+    for (let i = 0; i < dailyPredictions.length; i++) {
+      const weekIndex = Math.floor(i / 7);
+      if (!weeklyPredictions[weekIndex]) {
+        weeklyPredictions[weekIndex] = 0;
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + (weekIndex * 7));
+        weeklyDates[weekIndex] = date.toISOString().split('T')[0];
       }
+      weeklyPredictions[weekIndex] += dailyPredictions[i];
+    }
+    return { predictions: weeklyPredictions, dates: weeklyDates };
+  };
 
-      const data = await response.json();
-      console.log('Response data:', data);
+  const aggregateMonthly = (data) => {
+    const monthlyPredictions = [];
+    const monthlyDates = [];
+    if (!data || !data.predictions || data.predictions.length === 0) {
+      return { predictions: [], dates: [] };
+    }
 
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid response format from server');
+    const dailyPredictions = data.predictions;
+    const startDate = new Date(data.start_date || new Date());
+
+    let currentMonth = startDate.getMonth();
+    let currentMonthSum = 0;
+    let monthStartIndex = 0;
+
+    for (let i = 0; i < dailyPredictions.length; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+
+      if (currentDate.getMonth() !== currentMonth) {
+        monthlyPredictions.push(currentMonthSum);
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + monthStartIndex);
+        monthlyDates.push(date.toISOString().split('T')[0]);
+
+        currentMonth = currentDate.getMonth();
+        currentMonthSum = dailyPredictions[i];
+        monthStartIndex = i;
+      } else {
+        currentMonthSum += dailyPredictions[i];
       }
-      setPredictionData(data);
-    } catch (err) {
-      console.error('Prediction error:', err);
-      setError(err.message || 'Failed to get prediction. Please try again.');
-    } finally {
-      setIsLoading(false);
+    }
+    if (currentMonthSum > 0) {
+      monthlyPredictions.push(currentMonthSum);
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + monthStartIndex);
+      monthlyDates.push(date.toISOString().split('T')[0]);
+    }
+
+    return { predictions: monthlyPredictions, dates: monthlyDates };
+  };
+
+  const getProcessedPredictionData = () => {
+    if (!rawPredictionData) return null;
+
+    switch (viewMode) {
+      case 'weekly':
+        return aggregateWeekly(rawPredictionData);
+      case 'monthly':
+        return aggregateMonthly(rawPredictionData);
+      case 'daily':
+      default:
+        return rawPredictionData;
     }
   };
 
+  const processedPredictionData = getProcessedPredictionData();
+
   const handlePrediction = (formData) => {
-    getPrediction(formData);
+    getPrediction(formData.productId);
   };
 
   return (
@@ -78,13 +110,33 @@ const PredictionPage = () => {
           {/* Prediction Chart */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Prediction Results</h2>
+            <div className="flex justify-center space-x-4 mb-4">
+              <button
+                onClick={() => setViewMode('daily')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${viewMode === 'daily' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Daily
+              </button>
+              <button
+                onClick={() => setViewMode('weekly')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${viewMode === 'weekly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Weekly
+              </button>
+              <button
+                onClick={() => setViewMode('monthly')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${viewMode === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Monthly
+              </button>
+            </div>
             {isLoading ? (
               <div className="flex justify-center items-center h-96">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
               </div>
-            ) : predictionData ? (
+            ) : processedPredictionData ? (
               <div className="h-96">
-                <PredictionChart predictionData={predictionData} />
+                <PredictionChart predictionData={processedPredictionData} />
               </div>
             ) : (
               <div className="flex justify-center items-center h-96 text-gray-500">
