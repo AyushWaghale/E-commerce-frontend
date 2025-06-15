@@ -269,7 +269,7 @@ const PredictionChart = ({ predictionData }) => {
   return (
     <div className="flex flex-col gap-8 w-full">
       <div className="w-full bg-white rounded-lg shadow-lg p-6">
-        <div className="w-full">
+        <div className="w-full h-[500px]">
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
