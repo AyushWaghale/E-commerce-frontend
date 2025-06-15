@@ -37,18 +37,25 @@ const PredictionChart = ({ predictionData }) => {
   const endDate = predictionData.end_date;
   const analysis = predictionData.analysis;
 
-   // Step 2: Parse the nested analysis string
-   let parsedAnalysis = '';
-   try {
-     if (analysis) {
-       const jsonString = analysis.replace(/^json\s*/, ''); // remove "json" prefix if present
-       const parsed = JSON.parse(jsonString);
-       parsedAnalysis = parsed.response || '';
-     }
-   } catch (err) {
-     console.error('Error parsing analysis:', err);
-   }
-
+  // Handle analysis parsing - check if it's already HTML or needs JSON parsing
+  let parsedAnalysis = '';
+  try {
+    if (analysis) {
+      // Check if analysis starts with HTML tags (already processed)
+      if (analysis.trim().startsWith('<')) {
+        parsedAnalysis = analysis;
+      } else {
+        // Try to parse as JSON if it's not HTML
+        const jsonString = analysis.replace(/^json\s*/, ''); // remove "json" prefix if present
+        const parsed = JSON.parse(jsonString);
+        parsedAnalysis = parsed.response || '';
+      }
+    }
+  } catch (err) {
+    console.error('Error parsing analysis:', err);
+    // If parsing fails, use the raw analysis as is
+    parsedAnalysis = analysis || '';
+  }
 
   const dates = predictionData.dates || (() => {
     if (!startDate) {
@@ -269,7 +276,7 @@ const PredictionChart = ({ predictionData }) => {
   return (
     <div className="flex flex-col gap-8 w-full">
       <div className="w-full bg-white rounded-lg shadow-lg p-6">
-        <div className="w-full h-[500px]">
+        <div className="w-full h-[600px]">
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
