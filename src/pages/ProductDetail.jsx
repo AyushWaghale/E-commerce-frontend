@@ -19,7 +19,7 @@ import {
 
 import ProductDescription from '../components/ProductDescription';
 import SalesForecasting from '../components/SalesForecasting';
-import InventoryManagement from '../components/InventoryManagement';
+import InventoryForm from '../components/InventoryForm';
 
 ChartJS.register(
   CategoryScale,
@@ -208,6 +208,11 @@ const ProductDetail = () => {
     }
   };
 
+  const handleInventorySuccess = () => {
+    // Refresh product data after inventory update
+    fetchProduct();
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'description':
@@ -237,9 +242,10 @@ const ProductDetail = () => {
         );
       case 'inventory':
         return (
-          <InventoryManagement
-            product={product}
-          />
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6">Inventory Management</h2>
+            <InventoryForm productId={id} onSuccess={handleInventorySuccess} />
+          </div>
         );
       default:
         return null;
