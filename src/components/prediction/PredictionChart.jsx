@@ -34,6 +34,21 @@ const PredictionChart = ({ predictionData }) => {
   // Normalize input data
   const predictions = predictionData.predictions || predictionData.output;
   const startDate = predictionData.start_date;
+  const endDate = predictionData.end_date;
+  const analysis = predictionData.analysis;
+
+   // Step 2: Parse the nested analysis string
+   let parsedAnalysis = '';
+   try {
+     if (analysis) {
+       const jsonString = analysis.replace(/^json\s*/, ''); // remove "json" prefix if present
+       const parsed = JSON.parse(jsonString);
+       parsedAnalysis = parsed.response || '';
+     }
+   } catch (err) {
+     console.error('Error parsing analysis:', err);
+   }
+
 
   const dates = predictionData.dates || (() => {
     if (!startDate) {
@@ -192,6 +207,10 @@ const PredictionChart = ({ predictionData }) => {
           font: {
             size: 14,
             weight: 'bold'
+          },
+          padding: {
+            top: 0,
+            bottom: 20
           }
         },
         grid: {
@@ -222,7 +241,8 @@ const PredictionChart = ({ predictionData }) => {
           minRotation: 45,
           autoSkip: true,
           maxTicksLimit: 12,
-          padding: 10
+          padding: 10,
+          autoSkipPadding: 30
         }
       }
     },
@@ -247,8 +267,18 @@ const PredictionChart = ({ predictionData }) => {
   };
 
   return (
-    <div className="h-full w-full bg-white rounded-lg shadow-lg p-4">
-      <Line data={chartData} options={chartOptions} />
+    <div className="flex flex-col gap-8 w-full">
+      <div className="w-full bg-white rounded-lg shadow-lg p-6">
+        <div className="w-full">
+          <Line data={chartData} options={chartOptions} />
+        </div>
+      </div>
+      {parsedAnalysis && (
+        <div className="w-full bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">Analysis</h3>
+          <div className="prose max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: parsedAnalysis }} />
+        </div>
+      )}
     </div>
   );
 };

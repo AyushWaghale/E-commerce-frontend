@@ -238,6 +238,7 @@ const ProductDetail = () => {
             getPrediction={getPrediction}
             viewMode={viewMode}
             setViewMode={setViewMode}
+            rawPredictionData={rawPredictionData}
           />
         );
       case 'inventory':
