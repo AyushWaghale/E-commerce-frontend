@@ -7,7 +7,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 } from 'chart.js';
 
 ChartJS.register(
@@ -17,71 +18,210 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const PredictionChart = ({ predictionData }) => {
-  // Generate dates for the x-axis (assuming predictions are for next 365 days)
-  const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < predictionData.length; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date.toLocaleDateString());
+  if (
+    !predictionData ||
+    (!predictionData.predictions && !predictionData.output) ||
+    (predictionData.predictions?.length === 0 && predictionData.output?.length === 0)
+  ) {
+    return <div className="text-center text-gray-500 py-10">No prediction data available.</div>;
+  }
+
+  // Normalize input data
+  const predictions = predictionData.predictions || predictionData.output;
+  const startDate = predictionData.start_date;
+  const endDate = predictionData.end_date;
+  const analysis = predictionData.analysis;
+
+   // Step 2: Parse the nested analysis string
+   let parsedAnalysis = '';
+   try {
+     if (analysis) {
+       const jsonString = analysis.replace(/^json\s*/, ''); // remove "json" prefix if present
+       const parsed = JSON.parse(jsonString);
+       parsedAnalysis = parsed.response || '';
+     }
+   } catch (err) {
+     console.error('Error parsing analysis:', err);
+   }
+
+
+  const dates = predictionData.dates || (() => {
+    if (!startDate) {
+      return Array.from({ length: predictions.length }, (_, i) => `Day ${i + 1}`);
     }
-    return dates;
+    const baseDate = new Date(startDate);
+    return Array.from({ length: predictions.length }, (_, i) => {
+      const d = new Date(baseDate);
+      d.setDate(d.getDate() + i);
+      return d.toISOString().split('T')[0]; // format as YYYY-MM-DD
+    });
+  })();
+
+  // Calculate moving average and confidence intervals
+  const calculateMovingAverage = (data, windowSize = 7) => {
+    const result = [];
+    const upperBound = [];
+    const lowerBound = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const start = Math.max(0, i - windowSize + 1);
+      const end = i + 1;
+      const slice = data.slice(start, end);
+
+      const average = slice.reduce((a, b) => a + b, 0) / slice.length;
+      result.push(average);
+
+      const squaredDiffs = slice.map(value => Math.pow(value - average, 2));
+      const variance = squaredDiffs.reduce((a, b) => a + b, 0) / slice.length;
+      const stdDev = Math.sqrt(variance);
+
+      const confidenceInterval = 1.96 * stdDev;
+      upperBound.push(average + confidenceInterval);
+      lowerBound.push(average - confidenceInterval);
+    }
+
+    return { average: result, upperBound, lowerBound };
   };
 
+  const { average: movingAverage, upperBound, lowerBound } = calculateMovingAverage(predictions);
+
   const chartData = {
-    labels: generateDates(),
+    labels: dates,
     datasets: [
       {
-        label: 'Predicted Sales',
-        data: predictionData,
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        label: 'Daily Sales',
+        data: predictions,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
         tension: 0.4,
         fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 8,
+        order: 2
       },
+      {
+        label: 'Trend Line',
+        data: movingAverage,
+        borderColor: 'rgb(255, 99, 132)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        pointRadius: 0,
+        order: 1
+      },
+      {
+        label: 'Upper Bound',
+        data: upperBound,
+        borderColor: 'rgba(75, 192, 192, 0.2)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        borderWidth: 1,
+        fill: '+1',
+        pointRadius: 0,
+        order: 0
+      },
+      {
+        label: 'Lower Bound',
+        data: lowerBound,
+        borderColor: 'rgba(75, 192, 192, 0.2)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        borderWidth: 1,
+        fill: false,
+        pointRadius: 0,
+        order: 0
+      }
     ],
   };
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          filter: function (legendItem) {
+            return legendItem.text === 'Daily Sales' || legendItem.text === 'Trend Line';
+          }
+        }
       },
       title: {
         display: true,
         text: 'Sales Prediction for Next 365 Days',
         font: {
-          size: 16
+          size: 16,
+          weight: 'bold'
+        },
+        padding: {
+          top: 10,
+          bottom: 20
         }
       },
       tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        titleColor: '#1f2937',
+        bodyColor: '#1f2937',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 6,
         callbacks: {
-          label: function(context) {
-            return `Predicted Sales: ${context.parsed.y.toFixed(2)} units`;
+          label: function (context) {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y.toFixed(2);
+            if (label === 'Daily Sales') {
+              return `${label}: ${value} units`;
+            } else if (label === 'Trend Line') {
+              return `${label}: ${value} units (avg)`;
+            }
+            return null;
+          },
+          title: function (context) {
+            const date = new Date(context[0].label);
+            return date.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
           }
         }
       }
     },
     scales: {
       y: {
-        beginAtZero: true,
+        beginAtZero: false,
+        min: Math.min(...predictions) * 0.9,
+        max: Math.max(...predictions) * 1.1,
         title: {
           display: true,
           text: 'Sales (units)',
           font: {
-            size: 14
+            size: 14,
+            weight: 'bold'
+          },
+          padding: {
+            top: 0,
+            bottom: 20
           }
         },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false
+        },
         ticks: {
-          callback: function(value) {
-            return value.toFixed(0);
-          }
+          callback: function (value) {
+            return value;
+          },
+          padding: 10
         }
       },
       x: {
@@ -89,12 +229,20 @@ const PredictionChart = ({ predictionData }) => {
           display: true,
           text: 'Date',
           font: {
-            size: 14
+            size: 14,
+            weight: 'bold'
           }
+        },
+        grid: {
+          display: false
         },
         ticks: {
           maxRotation: 45,
-          minRotation: 45
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 12,
+          padding: 10,
+          autoSkipPadding: 30
         }
       }
     },
@@ -103,19 +251,36 @@ const PredictionChart = ({ predictionData }) => {
       intersect: false,
     },
     elements: {
+      line: {
+        tension: 0.4
+      },
       point: {
-        radius: 0, // Hide points to reduce visual clutter
-        hitRadius: 10, // Keep hover functionality
-        hoverRadius: 4 // Show points on hover
+        radius: 4,
+        hitRadius: 10,
+        hoverRadius: 8
       }
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart'
     }
   };
 
   return (
-    <div className="h-96 w-full">
-      <Line data={chartData} options={chartOptions} />
+    <div className="flex flex-col gap-8 w-full">
+      <div className="w-full bg-white rounded-lg shadow-lg p-6">
+        <div className="w-full h-[500px]">
+          <Line data={chartData} options={chartOptions} />
+        </div>
+      </div>
+      {parsedAnalysis && (
+        <div className="w-full bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">Analysis</h3>
+          <div className="prose max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: parsedAnalysis }} />
+        </div>
+      )}
     </div>
   );
 };
 
-export default PredictionChart; 
+export default PredictionChart;

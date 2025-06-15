@@ -1,4 +1,3 @@
-
 /** @type {import('tailwindcss').Config} */
 
 module.exports = {
@@ -6,6 +5,9 @@ module.exports = {
   content: ["./src/index.html", ,"./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'], // You can change 'Inter' to your preferred font
+      },
       colors: {
         primary: {
           DEFAULT: '#FF6A13', // Main orange

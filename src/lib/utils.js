@@ -54,3 +54,115 @@ export const categoryColors = {
 export function getCategoryColor(category) {
   return categoryColors[category] || categoryColors.default;
 }
+
+// Constants
+export const API_TIMEOUT = 10000;
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+export const SUPPORTED_DATASET_TYPES = ['text/csv', 'application/json'];
+
+// Validation functions
+export const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+export const validatePassword = (password) => {
+  return password.length >= 8;
+};
+
+export const validateFile = (file, maxSize = MAX_FILE_SIZE, allowedTypes = SUPPORTED_IMAGE_TYPES) => {
+  if (!file) return { valid: false, error: 'No file selected' };
+  if (file.size > maxSize) return { valid: false, error: 'File size exceeds limit' };
+  if (!allowedTypes.includes(file.type)) return { valid: false, error: 'File type not supported' };
+  return { valid: true };
+};
+
+// Format functions
+export const formatPrice = (price) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(price);
+};
+
+export const formatDate = (date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(date));
+};
+
+// Error handling
+export const handleApiError = (error) => {
+  if (error.response) {
+    // Server responded with error
+    return error.response.data.message || 'Server error occurred';
+  } else if (error.request) {
+    // Request made but no response
+    return 'No response from server';
+  } else {
+    // Other errors
+    return error.message || 'An unexpected error occurred';
+  }
+};
+
+// Local storage helpers
+export const storage = {
+  get: (key) => {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  },
+  set: (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Error writing to localStorage:', error);
+    }
+  },
+  remove: (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error('Error removing from localStorage:', error);
+    }
+  },
+  clear: () => {
+    try {
+      localStorage.clear();
+    } catch (error) {
+      console.error('Error clearing localStorage:', error);
+    }
+  },
+};
+
+// Debounce function
+export const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
+// Throttle function
+export const throttle = (func, limit) => {
+  let inThrottle;
+  return function executedFunction(...args) {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
