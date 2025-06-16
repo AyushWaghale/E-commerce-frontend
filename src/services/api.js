@@ -110,9 +110,9 @@ const handleResponse = (response) => {
 };
 
 export const authAPI = {
-  register: async (email, password) => {
+  register: async (email, password, companyName) => {
     try {
-      const response = await api.post('/api/auth/register', { email, password });
+      const response = await api.post('/api/auth/register', { email, password, companyName });
       return handleResponse(response);
     } catch (error) {
       throw new APIError(

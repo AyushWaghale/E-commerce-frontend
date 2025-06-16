@@ -6,6 +6,7 @@ const Register = () => {
   const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Register = () => {
     setLoading(true);
     setError('');
     try {
-      await register(email, password);
+      await register(email, password, companyName);
       navigate('/products');
     } catch (err) {
       setError(err.message || 'Registration failed');
@@ -44,14 +45,14 @@ const Register = () => {
           <h2 className="text-3xl font-extrabold text-text mb-2 text-center">Create Account</h2>
           <p className="text-text-muted text-center mb-6">Register to access forecasting insights</p>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* <input
+            <input
               type="text"
-              placeholder="Full Name"
-              className="w-full px-4 py-3 rounded bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
-              // value={name}
-              // onChange={(e) => setName(e.target.value)}
-              // required
-            /> */}
+              placeholder="Company Name"
+              className="w-full px-4 py-3 rounded bg-background border border-background-card focus:outline-none focus:ring-2 focus:ring-primary text-lg"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              required
+            />
             <input
               type="email"
               placeholder="Business Email"
