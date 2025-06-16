@@ -15,10 +15,15 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      await login(email, password);
-      navigate('/products');
+      const result = await login(email, password);
+      if (result.success) {
+        navigate('/products');
+      } else {
+        setError(result.error || 'Login failed');
+      }
     } catch (err) {
-      setError(err.message || 'Login failed');
+      console.error('Login error:', err);
+      setError(err.message || 'An unexpected error occurred during login');
     } finally {
       setLoading(false);
     }

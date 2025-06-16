@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useApi } from '../hooks/useApi';
 import { inventoryAPI } from '../services/api';
 import { handleApiError } from '../lib/utils';
 
-const InventoryForm = ({ productId }) => {
+const InventoryForm = ({ productId, onSuccess }) => {
   const [formData, setFormData] = useState({
     productId,
     stockQuantity: '',
@@ -15,9 +14,7 @@ const InventoryForm = ({ productId }) => {
   const [inventoryNotFound, setInventoryNotFound] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [savedMessage, setSavedMessage] = useState('');
-
-  const { data: existingInventory, loading, execute: fetchInventory } = useApi(inventoryAPI.getInventory);
-  const { execute: updateInventory } = useApi(inventoryAPI.updateInventory);
+  const [loading,setLoading]=useState('')
 
   const fetchInventoryData = useCallback(async () => {
     if (!productId) return;
@@ -31,7 +28,7 @@ const InventoryForm = ({ productId }) => {
     });
 
     try {
-      const result = await fetchInventory(productId);
+      const result = await inventoryAPI.getInventoryInput(productId);
       const data = result?.data;
 
       if (data) {
@@ -55,7 +52,7 @@ const InventoryForm = ({ productId }) => {
         setErrors({ submit: handleApiError(err) });
       }
     }
-  }, [productId, fetchInventory]);
+  }, [productId]);
 
   useEffect(() => {
     fetchInventoryData();
@@ -104,10 +101,13 @@ const InventoryForm = ({ productId }) => {
     setSavedMessage('');
 
     try {
-      await updateInventory(formData);
+      await inventoryAPI.updateInventory(formData.productId, parseFloat(formData.stockQuantity), parseFloat(formData.reorderThreshold));
       setInventoryNotFound(false);
       setShowForm(false);
       setSavedMessage('Inventory successfully saved!');
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (submitError) {
       setErrors({ submit: handleApiError(submitError) });
     } finally {
@@ -115,6 +115,7 @@ const InventoryForm = ({ productId }) => {
     }
   };
 
+ 
   if (loading) {
     return (
       <div className="flex justify-center items-center p-4">
