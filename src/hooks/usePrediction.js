@@ -403,7 +403,7 @@ const usePrediction = (productId) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+   let parsedAnalysis = '';
   const getPrediction = async () => {
     setIsLoading(true);
     setError('');
@@ -412,7 +412,7 @@ const usePrediction = (productId) => {
       const response = await fetch('http://localhost:5000/train_predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ product_id: productId }),
       });
 
       if (!response.ok) {
@@ -428,11 +428,24 @@ const usePrediction = (productId) => {
       const endDate = data.end_date || rawFallbackPredictions.end_date;
       const analysis = data.analysis || rawFallbackPredictions.analysis;
 
+   
+      try {
+        if (predictionData.analysis) {
+          const jsonString = data.analysis.replace(/^json\s*/, '');
+          const parsed = JSON.parse(jsonString);
+          parsedAnalysis = parsed.response || '';
+        }
+      } catch (err) {
+        console.error('Error parsing analysis:', err);
+        // If parsing fails, use the raw analysis
+        parsedAnalysis = predictionData.analysis || '';
+      }
+
       const processedData = {
         predictions: values,
         dates: dates,
         start_date: startDate, // Ensure start_date is explicitly set
-        analysis: data.analysis || rawFallbackPredictions.analysis,
+        analysis: parsedAnalysis || rawFallbackPredictions.analysis,
         end_date: data.end_date || rawFallbackPredictions.end_date
       };
 
