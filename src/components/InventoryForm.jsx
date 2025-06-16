@@ -21,6 +21,7 @@ const InventoryForm = ({ productId, onSuccess }) => {
 
     setInventoryNotFound(false);
     setErrors({});
+    setSavedMessage('');
     setFormData({
       productId,
       stockQuantity: '',
@@ -31,7 +32,11 @@ const InventoryForm = ({ productId, onSuccess }) => {
       const result = await inventoryAPI.getInventoryInput(productId);
       const data = result?.data;
 
-      if (data) {
+      if (!data || !data.stockQuantity) {
+        setInventoryNotFound(true);
+        setShowForm(true);
+        setSavedMessage('Inventory input not found for this product. Please add inventory inputs.');
+      } else {
         setFormData({
           productId: data.productId,
           stockQuantity: data.stockQuantity,
@@ -39,17 +44,17 @@ const InventoryForm = ({ productId, onSuccess }) => {
         });
         setInventoryNotFound(false);
         setShowForm(false);
-      } else {
-        setInventoryNotFound(true);
-        setShowForm(true);
+        setSavedMessage('Inventory Data successfully loaded.');
       }
     } catch (err) {
       if (err.originalError?.response?.status === 404) {
         setInventoryNotFound(true);
         setShowForm(true);
         setErrors({});
+        setSavedMessage('Inventory input not found for this product. Please add inventory inputs.');
       } else {
         setErrors({ submit: handleApiError(err) });
+        setSavedMessage('Failed to fetch inventory data.');
       }
     }
   }, [productId]);
@@ -133,7 +138,7 @@ const InventoryForm = ({ productId, onSuccess }) => {
         </div>
       )}
 
-      {!inventoryNotFound && !showForm && (
+      {!inventoryNotFound && !showForm && formData.stockQuantity && formData.reorderThreshold && (
         <div className="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded relative">
           <p className="font-semibold">Inventory Data:</p>
           <ul className="list-disc pl-5 mt-1">
@@ -196,35 +201,24 @@ const InventoryForm = ({ productId, onSuccess }) => {
             )}
           </div>
 
-          {errors.submit && (
+          {/* {errors.submit && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
               {errors.submit}
             </div>
-          )}
+          )} */}
 
           {savedMessage && (
-            <div className="bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded">
-              {savedMessage}
+            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{savedMessage}</span>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isSubmitting
-                ? 'bg-blue-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-            }`}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
           >
-            {isSubmitting ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                Saving...
-              </div>
-            ) : (
-              inventoryNotFound ? 'Create Inventory' : 'Update Inventory'
-            )}
+            {isSubmitting ? 'Saving...' : 'Save Inventory'}
           </button>
         </form>
       )}

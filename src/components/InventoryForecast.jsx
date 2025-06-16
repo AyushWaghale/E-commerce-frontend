@@ -39,7 +39,7 @@ const InventoryForecast = ({ productId }) => {
         setForecast(forecastData.forecast);
         setInventoryInput(inputData.data);
       } catch (err) {
-        setError(err.message);
+        setError(err);
       } finally {
         setLoading(false);
       }
@@ -56,16 +56,35 @@ const InventoryForecast = ({ productId }) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <strong className="font-bold">Error!</strong>
-        <span className="block sm:inline"> {error}</span>
-      </div>
-    );
-  }
+  // Handle specific user-friendly messages instead of generic errors
+  if (error || !forecast || !inventoryInput) {
+    let displayMessage = "";
+    // Safely get error message as a lowercase string, default to empty string
+    const safeErrorMessage = (error && typeof error.message === 'string' ? error.message : '').toLowerCase();
 
-  if (!forecast || !inventoryInput) return null;
+    if (safeErrorMessage.includes('failed to fetch') || safeErrorMessage.includes('network')) {
+      displayMessage = "Failed to connect to the prediction service. Please check your internet connection.";
+    } else if (safeErrorMessage.includes('404') || !forecast) {
+      displayMessage = "No sales forecast available for this product. Please ensure inventory inputs are added and sales data has been saved to generate predictions.";
+    } else if (error) { // This implies error exists, but its message didn't match specific patterns
+      // Fallback for other errors, ensuring error.message is valid
+      displayMessage = `Failed to fetch sales forecast: ${error.message || 'An unknown error occurred'}. Please try again later.`;
+    } else if (!forecast) {
+      displayMessage = "No sales forecast available for this product. Please ensure inventory inputs are added and sales data has been saved to generate predictions.";
+    } else if (!inventoryInput) {
+      displayMessage = "Inventory data not found for this product. Please add inventory inputs to view the forecast.";
+    }
+
+    if (displayMessage) {
+      return (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Information:</strong>
+          <span className="block sm:inline"> {displayMessage}</span>
+        </div>
+      );
+    }
+    return null; // Don't render anything if no specific message is generated
+  }
 
   const calculateMonthsUntilDepletion = () => {
     let remainingStock = inventoryInput.stockQuantity;
