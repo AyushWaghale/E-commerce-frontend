@@ -43,6 +43,18 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Log detailed error information
+    console.error('API Error Details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers,
+      }
+    });
+
     // Handle token refresh if 401 error
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -63,10 +75,18 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle other errors
-    const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
+    // Handle other errors with more specific messages
+    let errorMessage = 'An unexpected error occurred';
+    if (error.response) {
+      errorMessage = error.response.data?.message || error.response.statusText || errorMessage;
+    } else if (error.request) {
+      errorMessage = 'No response received from server. Please check your internet connection.';
+    } else {
+      errorMessage = error.message || errorMessage;
+    }
+    
     console.error('API Error:', errorMessage);
-    return Promise.reject(error);
+    return Promise.reject(new APIError(errorMessage, error.response?.status, error.response?.data, error));
   }
 );
 
@@ -221,33 +241,44 @@ export const productAPI = {
 };
 
 export const inventoryAPI = {
-  getInventory: async (productId) => {
+  getForecast: async (productId) => {
+    try {
+      const response = await api.get(`/api/inventory/predict/${productId}`);
+      return handleResponse(response);
+    } catch (error) {
+      throw new APIError(
+        error.response?.data?.message || 'Failed to fetch inventory forecast',
+        error.response?.status,
+        error.response?.data
+      );
+    }
+  },
+
+  updateInventory: async (productId, stockQuantity, reorderThreshold) => {
+    try {
+      const response = await api.post(`/api/inventory/input`, { productId, stockQuantity, reorderThreshold });
+      return handleResponse(response);
+    } catch (error) {
+      throw new APIError(
+        error.response?.data?.message || 'Failed to update inventory',
+        error.response?.status,
+        error.response?.data
+      );
+    }
+  },
+
+  getInventoryInput: async (productId) => {
     try {
       const response = await api.get(`/api/inventory/input/${productId}`);
       return handleResponse(response);
     } catch (error) {
       throw new APIError(
-        error.response?.data?.message || 'Failed to fetch inventory data',
+        error.response?.data?.message || 'Failed to fetch inventory input',
         error.response?.status,
-        error.response?.data,
-        error
+        error.response?.data
       );
     }
-  },
-
-  updateInventory: async (inventoryData) => {
-    try {
-      const response = await api.post('/api/inventory/input', inventoryData);
-      return handleResponse(response);
-    } catch (error) {
-      throw new APIError(
-        error.response?.data?.message || 'Failed to update inventory data',
-        error.response?.status,
-        error.response?.data,
-        error
-      );
-    }
-  },
+  }
 };
 
 export default api;

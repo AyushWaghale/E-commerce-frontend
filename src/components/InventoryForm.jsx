@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useApi } from '../hooks/useApi';
 import { inventoryAPI } from '../services/api';
 import { handleApiError } from '../lib/utils';
 
-const InventoryForm = ({ productId }) => {
+const InventoryForm = ({ productId, onSuccess }) => {
   const [formData, setFormData] = useState({
     productId,
     stockQuantity: '',
@@ -15,15 +14,14 @@ const InventoryForm = ({ productId }) => {
   const [inventoryNotFound, setInventoryNotFound] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [savedMessage, setSavedMessage] = useState('');
-
-  const { data: existingInventory, loading, execute: fetchInventory } = useApi(inventoryAPI.getInventory);
-  const { execute: updateInventory } = useApi(inventoryAPI.updateInventory);
+  const [loading,setLoading]=useState('')
 
   const fetchInventoryData = useCallback(async () => {
     if (!productId) return;
 
     setInventoryNotFound(false);
     setErrors({});
+    setSavedMessage('');
     setFormData({
       productId,
       stockQuantity: '',
@@ -31,10 +29,14 @@ const InventoryForm = ({ productId }) => {
     });
 
     try {
-      const result = await fetchInventory(productId);
+      const result = await inventoryAPI.getInventoryInput(productId);
       const data = result?.data;
 
-      if (data) {
+      if (!data || !data.stockQuantity) {
+        setInventoryNotFound(true);
+        setShowForm(true);
+        setSavedMessage('Inventory input not found for this product. Please add inventory inputs.');
+      } else {
         setFormData({
           productId: data.productId,
           stockQuantity: data.stockQuantity,
@@ -42,20 +44,20 @@ const InventoryForm = ({ productId }) => {
         });
         setInventoryNotFound(false);
         setShowForm(false);
-      } else {
-        setInventoryNotFound(true);
-        setShowForm(true);
+        setSavedMessage('Inventory Data successfully loaded.');
       }
     } catch (err) {
       if (err.originalError?.response?.status === 404) {
         setInventoryNotFound(true);
         setShowForm(true);
         setErrors({});
+        setSavedMessage('Inventory input not found for this product. Please add inventory inputs.');
       } else {
         setErrors({ submit: handleApiError(err) });
+        setSavedMessage('Failed to fetch inventory data.');
       }
     }
-  }, [productId, fetchInventory]);
+  }, [productId]);
 
   useEffect(() => {
     fetchInventoryData();
@@ -104,10 +106,13 @@ const InventoryForm = ({ productId }) => {
     setSavedMessage('');
 
     try {
-      await updateInventory(formData);
+      await inventoryAPI.updateInventory(formData.productId, parseFloat(formData.stockQuantity), parseFloat(formData.reorderThreshold));
       setInventoryNotFound(false);
       setShowForm(false);
       setSavedMessage('Inventory successfully saved!');
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (submitError) {
       setErrors({ submit: handleApiError(submitError) });
     } finally {
@@ -115,6 +120,7 @@ const InventoryForm = ({ productId }) => {
     }
   };
 
+ 
   if (loading) {
     return (
       <div className="flex justify-center items-center p-4">
@@ -132,7 +138,7 @@ const InventoryForm = ({ productId }) => {
         </div>
       )}
 
-      {!inventoryNotFound && !showForm && (
+      {!inventoryNotFound && !showForm && formData.stockQuantity && formData.reorderThreshold && (
         <div className="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded relative">
           <p className="font-semibold">Inventory Data:</p>
           <ul className="list-disc pl-5 mt-1">
@@ -195,35 +201,24 @@ const InventoryForm = ({ productId }) => {
             )}
           </div>
 
-          {errors.submit && (
+          {/* {errors.submit && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
               {errors.submit}
             </div>
-          )}
+          )} */}
 
           {savedMessage && (
-            <div className="bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded">
-              {savedMessage}
+            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{savedMessage}</span>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isSubmitting
-                ? 'bg-blue-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-            }`}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
           >
-            {isSubmitting ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                Saving...
-              </div>
-            ) : (
-              inventoryNotFound ? 'Create Inventory' : 'Update Inventory'
-            )}
+            {isSubmitting ? 'Saving...' : 'Save Inventory'}
           </button>
         </form>
       )}

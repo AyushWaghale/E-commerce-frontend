@@ -20,6 +20,7 @@ import {
 import ProductDescription from '../components/ProductDescription';
 import SalesForecasting from '../components/SalesForecasting';
 import InventoryForm from '../components/InventoryForm';
+import InventoryForecast from '../components/InventoryForecast';
 
 ChartJS.register(
   CategoryScale,
@@ -245,7 +246,13 @@ const ProductDetail = () => {
         return (
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-6">Inventory Management</h2>
-            <InventoryForm productId={id} onSuccess={handleInventorySuccess} />
+            <div className="space-y-8">
+              <InventoryForm productId={id} onSuccess={handleInventorySuccess} />
+              <div className="mt-8">
+                <h3 className="text-xl font-semibold mb-4">Inventory Forecast</h3>
+                <InventoryForecast productId={id} />
+              </div>
+            </div>
           </div>
         );
       default:
